@@ -1,0 +1,248 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Noto+Sans:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-family: 'Noto Sans', sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #FAFAF8;
+}
+
+#root {
+  height: 100%;
+}
+
+/* Hide scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Button active states */
+button:active {
+  transform: scale(0.98);
+}
+
+/* Input focus states */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #1E5C20;
+}
+
+/* Smooth transitions */
+button,
+a,
+input,
+select,
+textarea {
+  transition: all 0.15s ease;
+}
+
+/* Sora font for headings */
+h1, h2, h3, h4, .font-display {
+  font-family: 'Sora', sans-serif;
+}
+
+/* Status bar safe area */
+.safe-bottom {
+  padding-bottom: calc(1rem + var(--safe-bottom));
+}
+
+/* Image placeholder gradient */
+.img-placeholder {
+  background: linear-gradient(135deg, #EEF6EE 0%, #d4e8d5 100%);
+}
+
+/* Card hover effect */
+.card-hover {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Gradient backgrounds */
+.gradient-green {
+  background: linear-gradient(160deg, #133D15 0%, #1E5C20 60%, #2D7A30 100%);
+}
+
+.gradient-orange {
+  background: linear-gradient(135deg, #C1440E 0%, #e05a22 100%);
+}
+
+/* Badge styles */
+.badge-available {
+  background: #d4edda;
+  color: #1a6630;
+}
+
+.badge-reserved {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.badge-sold {
+  background: #fde8e8;
+  color: #9b1c1c;
+}
+
+/* Toast animation */
+.toast-enter {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.toast-exit {
+  animation: fadeIn 0.3s ease-out reverse;
+}
+
+/* Custom scrollbar for webkit */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Phone frame simulation */
+@media (min-width: 431px) {
+  .phone-frame {
+    border-radius: 40px;
+    box-shadow:
+      0 0 0 12px #1a1a1a,
+      0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Loading skeleton */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Touch feedback */
+.touch-feedback {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+/* Prevent text selection on buttons */
+button {
+  user-select: none;
+}
+
+/* WhatsApp button style */
+.wa-btn {
+  background: #25D366;
+  transition: background 0.2s ease;
+}
+
+.wa-btn:hover {
+  background: #1da851;
+}
+
+/* Input placeholder */
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* Select styling */
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+}
+
+/* Safe area for mobile devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-padding-bottom {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+}

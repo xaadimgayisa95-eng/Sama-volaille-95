@@ -1,1 +1,256 @@
-aW1wb3J0IHsgdXNlU3RhdGUsIHVzZUVmZmVjdCwgdXNlQ2FsbGJhY2sgfSBmcm9tICdyZWFjdCc7CmltcG9ydCB7IHN1cGFiYXNlLCBzdXBhYmFzZVVybCwgc3VwYWJhc2VBbm9uS2V5IH0gZnJvbSAnLi9saWIvc3VwYWJhc2UnOwppbXBvcnQgewogIEhvbWUsCiAgU2VhcmNoLAogIFBsdXNDaXJjbGUsCiAgVXNlciwKICBBcnJvd0xlZnQsCiAgSGVhcnQsCiAgTWVzc2FnZUNpcmNsZSwKICBCZWxsLAogIENoZXZyb25SaWdodCwKICBNYXBQaW4sCiAgUGFja2FnZSwKICBDYWxlbmRhciwKICBTaGllbGQsCiAgSGVscENpcmNsZSwKICBMb2dPdXQsCiAgQ2FtZXJhLAogIFgsCiAgTG9hZGVyMiwKICBUcmFzaDIsCiAgRWRpdCwKICBDaGVja0NpcmNsZSwKICBBbGVydFRyaWFuZ2xlLAogIFVzZXJzLAogIEZpbGVUZXh0LAogIEZsYWcsCiAgUGhvbmUsCiAgTWVudSwKICBMYXlvdXREYXNoYm9hcmQsCiAgWENpcmNsZSwKfSBmcm9tICdsdWNpZGUtcmVhY3QnOwppbXBvcnQgdHlwZSB7IENhdGVnb3J5LCBMaXN0aW5nLCBQcm9maWxlLCBTY3JlZW4sIFJlcG9ydCwgTW9kZXJhdGlvblJlc3VsdCB9IGZyb20gJy4vdHlwZXMvZGF0YWJhc2UnOwoKY29uc3QgU1VQQUJBU0VfQ09ORklHVVJFRCA9IHN1cGFiYXNlVXJsICE9PSAnaHR0cHM6Ly9wbGFjZWhvbGRlci5zdXBhYmFzZS5jbyc7CgovLyBIZWxwZXIgdG8gZ2V0IGltYWdlIFVSTApmdW5jdGlvbiBnZXRJbWFnZVVybChwYXRoOiBzdHJpbmcgfCBudWxsKTogc3RyaW5nIHwgbnVsbCB7CiAgaWYgKCFwYXRoKSByZXR1cm4gbnVsbDsKICBpZiAocGF0aC5zdGFydHNXaXRoKCdodHRwJykpIHJldHVybiBwYXRoOwogIHJldHVybiBgJHtzdXBhYmFzZVVybH0vc3RvcmFnZS92MS9vYmplY3QvcHVibGljL2xpc3RpbmdzLyR7cGF0aH1gOwp9CgpmdW5jdGlvbiBoYW5kbGVJbWdFcnJvcihlOiBSZWFjdC5TeW50aGV0aWNFdmVudDxIVE1MSW1hZ2VFbGVtZW50Pikgewogc29uIHRhcmdldCA9IGUuY3VycmVudFRhcmdldDsKICB0YXJnZXQuc3R5bGUuZGlzcGxheSA9ICdub25lJzsKfQoKLy8gU3RhdHVzIGJhciBjb21wb25lbnQKZnVuY3Rpb24gU3RhdHVzQmFyKCkgewogIGNvbnN0IFt0aW1lLCBzZXRUaW1lXSA9IHVzZVN0YXRlKG5ldyBEYXRlKCkpOwoKICB1c2VFZmZlY3QoKCkgPT4gewogICAgY29uc3QgaW50ZXJ2YWwgPSBzZXRJbnRlcnZhbCgoKSA9PiBzZXRUaW1lKG5ldyBEYXRlKCkpLCAxMDAwKTsKICAgIHJldHVybiAoKSA9PiBjbGVhckludGVydmFsKGludGVydmFsKTsKICB9LCBbXSk7CgogIHJldHVybiAoCiAgICA8ZGl2IGNsYXNzTmFtZT0iaC0xMSBiZy1bIzEzM0QxNV0gZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuIHB4LTUgc2hyaW5rLTAiPgogICAgICA8c3BhbiBjbGFzc05hbWU9InRleHQtd2hpdGUgdGV4dC14cyBmb250LXNlbWlib2xkIj4KICAgICAgICB7dGltZS50b0xvY2FsZVRpbWVTdHJpbmcoJ2ZyLUZSJywgeyBob3VyOiAnMi1kaWdpdCcsIG1pbnV0ZTogJzItZGlnaXQnIH0pfQogICAgICA8L3NwYW4+CiAgICAgIDxkaXYgY2xhc3NOYW1lPSJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMS41IHRleHQtd2hpdGUgdGV4dC14cyI+CiAgICAgICAgPHNwYW4+X3NpZ25hbDwvc3Bhbj4KICAgICAgICA8c3Bhbj53aWZpPC9zcGFuPgogICAgICAgIDxzcGFuPmJhdHRlcnk8L3NwYW4+CiAgICAgIDwvZGl2PgogICAgPC9kaXY+CiAgKTsKfQoKLy8gQm90dG9tIG5hdmlnYXRpb24KZnVuY3Rpb24gQm90dG9tTmF2KHsgYWN0aXZlLCBvbkNoYW5nZSB9OiB7IGFjdGl2ZTogU2NyZWVuOyBvbkNoYW5nZTogKHM6IFNjcmVlbikgPT4gdm9pZDsgaXNBZG1pbj86IGJvb2xlYW4gfSkgewogIGNvbnN0IGl0ZW1zID0gWwogICAgeyBpZDogJ2hvbWUnIGFzIFNjcmVlbiwgaWNvbjogSG9tZSwgbGFiZWw6ICdBY2N1ZWlsJyB9LAogICAgeyBpZDogJ3NlYXJjaCcgYXMgU2NyZWVuLCBpY29uOiBTZWFyY2gsIGxhYmVsOiAnUmVjaGVyY2hlcicgfSwKICAgIHsgaWQ6ICdwdWJsaXNoJyBhcyBTY3JlZW4sIGljb246IFBsdXNDaXJjbGUsIGxhYmVsOiAnUHVibGllcicgfSwKICAgIHsgaWQ6ICdmYXZvcml0ZXMnIGFzIFNjcmVlbiwgaWNvbjogSGVhcnQsIGxhYmVsOiAnRmF2b3JpcycgfSwKICAgIHsgaWQ6ICdwcm9maWxlJyBhcyBTY3JlZW4sIGljb246IFVzZXIsIGxhYmVsOiAnUHJvZmlsJyB9LAogIF07CgogIHJldHVybiAoCiAgICA8bmF2IGNsYXNzTmFtZT0iYmctd2hpdGUgYm9yZGVyLXQgYm9yZGVyLWdyYXktMjAwIGZsZXggc2hyaW5rLTAgcGItW2VudihzYWZlLWFyZWEtaW5zZXQtYm90dG9tKV0iPgogICAgICB7aXRlbXMubWFwKCh7IGlkLCBpY29uOiBJY29uLCBsYWJlbCB9KSA9PiAoCiAgICAgICAgPGJ1dHRvbgogICAgICAgICAga2V5PXtpZH0KICAgICAgICAgIG9uQ2xpY2s9eygpID0+IG9uQ2hhbmdlKGlkKX0KICAgICAgICAgIGNsYXNzTmFtZT0iZmxleC0xIGZsZXggZmxleC1jb2wgaXRlbXMtY2VudGVyIGdhcC0xIHB5LTIgdGV4dC1ncmF5LTQwMCB0cmFuc2l0aW9uLWNvbG9ycyIKICAgICAgICA+CiAgICAgICAgICA8SWNvbiBjbGFzc05hbWU9e2B3LTUgaC01ICR7YWN0aXZlID09PSBpZCA/ICd0ZXh0LVsjMUU1QzIwXScgOiAnJ31gfSAvPgogICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPXtgdGV4dC1bOXB4XSBmb250LXNlbWlib2xkICR7YWN0aXZlID09PSBpZCA/ICd0ZXh0LVsjMUU1QzIwXScgOiAnJ31gfT4KICAgICAgICAgICAge2xhYmVsfQogICAgICAgICAgPC9zcGFuPgogICAgICAgICAge2FjdGl2ZSA9PT0gaWQgJiYgPGRpdiBjbGFzc05hbWU9InctMSBoLTEgYmctWyMxRTVDMjBdIHJvdW5kZWQtZnVsbCIgLz59CiAgICAgICAgPC9idXR0b24+CiAgICAgICkpfQogICAgPC9uYXY+CiAgKTsKfQoKLy8gVG9hc3QgY29tcG9uZW50CmZ1bmN0aW9uIFRvYXN0KHsgbWVzc2FnZSwgc2hvdyB9OiB7IG1lc3NhZ2U6IHN0cmluZzsgc2hvdzogYm9vbGVhbiB9KSB7CiAgcmV0dXJuICgKICAgIDxkaXYKICAgICAgY2xhc3NOYW1lPXtgZml4ZWQgYm90dG9tLTI0IGxlZnQtMS8yIC10cmFuc2xhdGUteC0xLzIgYmctZ3JheS05MDAvOTUgdGV4dC13aGl0ZSBweC01IHB5LTMgcm91bmRlZC14bCB0ZXh0LXNtIGZvbnQtc2VtaWJvbGQgYmFja2Ryb3AtYmx1ci1zbSB0cmFuc2l0aW9uLWFsbCBkdXJhdGlvbi0zMDAgei1bMTAwXSB3aGl0ZXNwYWNlLW5vd3JhcCBzaGFkb3ctbGcgJHsKICAgICAgICBzaG93ID8gJ29wYWNpdHktMTAwIHRyYW5zbGF0ZS15LTAnIDogJ29wYWNpdHktMCB0cmFuc2xhdGUteS01IHBvaW50ZXItZXZlbnRzLW5vbmUnCiAgICAgIH1gfQogICAgPgogICAgICB7bWVzc2FnZX0KICAgIDwvZGl2PgogICk7Cn0KCi8vIEJhZGdlIGNvbXBvbmVudApmdW5jdGlvbiBCYWRnZSh7IHN0YXR1cyB9OiB7IHN0YXR1czogc3RyaW5nIH0pIHsKICBjb25zdCBzdHlsZXMgPSB7CiAgICBhdmFpbGFibGU6ICdiZy1ncmVlbi0xMDAgdGV4dC1ncmVlbi04MDAsCiAgICByZXNlcnZlZDogJ2JnLXllbGxvdy0xMDAgdGV4dC15ZWxsb3ctODAwJywKICAgIHNvbGQ6ICdiZy1yZWQtMTAwIHRleHQtcmVkLTgwMCcsCiAgICBwZW5kaW5nOiAnYmctb3JhbmdlLTEwMCB0ZXh0LW9yYW5nZS04MDAsCiAgICByZXZpZXdlZDogJ2JnLWJsdWUtMTAwIHRleHQtYmx1ZS04MDAsCiAgICByZXNvbHZlZDogJ2JnLWdyYXktMTAwIHRleHQtZ3JheS04MDAsCiAgfTsKICBjb25zdCBsYWJlbHMgPSB7CiAgICBhdmFpbGFibGU6ICdEaXNwb25pYmxlJywKICAgIHJlc2VydmVkOiAnUsOpc2VydsOpJywKICAgIHNvbGQ6ICdWZW5kdScsCiAgICBwZW5kaW5nOiAnRW4gYXR0ZW50ZScsCiAgICByZXZpZXdlZDogJ0V4YW1pbsOpJywKICAgIHJlc29sdmVkOiAnUsOpc29sdScsCiAgfTsKICByZXR1cm4gKAogICAgPHNwYW4gY2xhc3NOYW1lPXtgdGV4dC1bMTBweF0gZm9udC1ib2xkIHB4LTIgcHktMC41IHJvdW5kZWQgdXBwZXJjYXNlIHRyYWNraW5nLXdpZGUgJHtzdHlsZXNbc3RhdHVzIGFzIGtleW9mIHR5cGVvZiBzdHlsZXNdIHx8ICdiZy1ncmF5LTEwMCB0ZXh0LWdyYXktODAwJ31gfT4KICAgICAge2xhYmVsc1tzdGF0dXMgYXMga2V5b2YgdHlwZW9mIGxhYmVsc10gfHwgc3RhdHVzfQogICAgPC9zcGFuPgogICk7Cn0KCi8vIEZvcm1hdCBwcmljZQpmdW5jdGlvbiBmb3JtYXRQcmljZShwcmljZTogbnVtYmVyKTogc3RyaW5nIHsKICByZXR1cm4gcHJpY2UudG9Mb2NhbGVTdHJpbmcoJ2ZyLUZSJykgKyAnIEZDRkEnOwp9CgovLyBJbWFnZSBVcGxvYWQgY29tcG9uZW50CmZ1bmN0aW9uIEltYWdlVXBsb2FkKHsgaW1hZ2VzLCBvblVwbG9hZCwgb25SZW1vdmUgfTogeyBpbWFnZXM6IHN0cmluZ1tdOyBvblVwbG9hZDogKGZpbGVzOiBGaWxlTGlzdCkgPT4gUHJvbWlzZTx2b2lkPjsgb25SZW1vdmU6IChpbmRleDogbnVtYmVyKSA9PiB2b2lkIH0pIHsKICBjb25zdCBbdXBsb2FkaW5nLCBzZXRVcGxvYWRpbmddID0gdXNlU3RhdGUoZmFsc2UpOwoKICBhc3luYyBmdW5jdGlvbiBoYW5kbGVGaWxlQ2hhbmdlKGU6IFJlYWN0LkNoYW5nZUV2ZW50PEhUTUxJbnB1dEVsZW1lbnQ+KSB7CiAgICBpZiAoZS50YXJnZXQuZmlsZXMgJiYgZS50YXJnZXQuZmlsZXMubGVuZ3RoID4gMCkgewogICAgICBzZXRVcGxvYWRpbmcodHJ1ZSk7CiAgICAgIGF3YWl0IG9uVXBsb2FkKGUudGFyZ2V0LmZpbGVzKTsKICAgICAgc2V0VXBsb2FkaW5nKGZhbHNlKTsKICAgICAgZS50YXJnZXQudmFsdWUgPSAnJzsKICAgIH0KICB9CgogIHJldHVybiAoCiAgICA8ZGl2IGNsYXNzTmFtZT0ic3BhY2UteS0zIj4KICAgICAgPGRpdiBjbGFzc05hbWU9ImZsZXggZ2FwLTIgb3ZlcmZsb3cteC1hdXRvIHBiLTIiPgogICAgICAgIHtpbWFnZXMubWFwKChpbWcsIGlkeCkgPT4gKAogICAgICAgICAgPGRpdiBrZXk9e2lkeH0gY2xhc3NOYW1lPSJyZWxhdGl2ZSBzaHJpbmstMCI+CiAgICAgICAgICAgIDxpbWcKICAgICAgICAgICAgICBzcmM9e2dldEltYWdlVXJsKGltZykgfHwgaW1nfQogICAgICAgICAgICAgIGFsdD0iIgogICAgICAgICAgICAgIG9uRXJyb3I9e2hhbmRsZUltZ0Vycm9yfQogICAgICAgICAgICAgIGNsYXNzTmFtZT0idy0yMCBoLTIwIG9iamVjdC1jb3ZlciByb3VuZGVkLWxnIGJvcmRlciBib3JkZXItZ3JheS0yMDAiCiAgICAgICAgICAgIC8+CiAgICAgICAgICAgIDxidXR0b24KICAgICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiBvblJlbW92ZShpZHgpfQogICAgICAgICAgICAgIGNsYXNzTmFtZT0iYWJzb2x1dGUgLXRvcC0xIC1yaWdodC0xIHctNSBoLTUgYmctcmVkLTUwMCB0ZXh0LXdoaXRlIHJvdW5kZWQtZnVsbCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciB0ZXh0LXhzIgogICAgICAgICAgICA+CiAgICAgICAgICAgICAgPFggY2xhc3NOYW1lPSJ3LTMgaC0zIiAvPgogICAgICAgICAgICA8L2J1dHRvbj4KICAgICAgICAgIDwvZGl2PgogICAgICAgICkpfQogICAgICAgIHtpbWFnZXMubGVuZ3RoIDwgNSAmJiAoCiAgICAgICAgICA8bGFiZWwgY2xhc3NOYW1lPXtgdy0yMCBoLTIwIGJvcmRlci0yIGJvcmRlci1kYXNoZWQgYm9yZGVyLWdyYXktMzAwIHJvdW5kZWQtbGcgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgY3Vyc29yLXBvaW50ZXIgaG92ZXI6Ym9yZGVyLVsjMUU1QzIwXSB0cmFuc2l0aW9uLWNvbG9ycyBzaHJpbmstMCAke3VwbG9hZGluZyA/ICdvcGFjaXR5LTUwJyA6ICcnfWB9PgogICAgICAgICAgICB7dXBsb2FkaW5nID8gKAogICAgICAgICAgICAgIDxMb2FkZXIyIGNsYXNzTmFtZT0idy02IGgtNiBhbmltYXRlLXNwaW4gdGV4dC1ncmF5LTQwMCIgLz4KICAgICAgICAgICAgKSA6ICgKICAgICAgICAgICAgICA8Q2FtZXJhIGNsYXNzTmFtZT0idy02IGgtNiB0ZXh0LWdyYXktNDAwIiAvPgogICAgICAgICAgICApfQogICAgICAgICAgICA8aW5wdXQKICAgICAgICAgICAgICB0eXBlPSJmaWxlIgogICAgICAgICAgICAgIGFjY2VwdD0iaW1hZ2UvKiIKICAgICAgICAgICAgICBtdWx0aXBsZQogICAgICAgICAgICAgIG9uQ2hhbmdlPXtoYW5kbGVGaWxlQ2hhbmdlfQogICAgICAgICAgICAgIGNsYXNzTmFtZT0iaGlkZGVuIgogICAgICAgICAgICAgIGRpc2FibGVkPXt1cGxvYWRpbmd9CiAgICAgICAgICAgIC8+CiAgICAgICAgICA8L2xhYmVsPgogICAgICAgICl9CiAgICAgIDwvZGl2PgogICAgICB7aW1hZ2VzLmxlbmd0aCA9PT0gMCAmJiAoCiAgICAgICAgPHAgY2xhc3NOYW1lPSJ0ZXh0LXhzIHRleHQtZ3JheS01MDAgdGV4dC1jZW50ZXIiPkFqb3V0ZXogasO8c3F1J8OgIDUgcGhvdG9zPC9wPgogICAgICApfQogICAgPC9kaXY+CiAgKTsKfQo=
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from './lib/supabase';
+import { Menu, XCircle, Flag, Users, FileText, LayoutDashboard, LogOut, Heart, PlusCircle } from 'lucide-react';
+import type { Category, Listing, Profile, Screen } from './types/database';
+import StatusBar from './components/StatusBar';
+import BottomNav from './components/BottomNav';
+import Toast from './components/Toast';
+import HomeScreen from './screens/HomeScreen';
+import SearchScreen from './screens/SearchScreen';
+import DetailScreen from './screens/DetailScreen';
+import PublishScreen from './screens/PublishScreen';
+import FavoritesScreen from './screens/FavoritesScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import AuthScreen from './screens/AuthScreen';
+import AdminDashboard from './screens/AdminDashboard';
+import AdminListingsScreen from './screens/AdminListingsScreen';
+import AdminReportsScreen from './screens/AdminReportsScreen';
+import AdminUsersScreen from './screens/AdminUsersScreen';
+
+function App() {
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [screen, setScreen] = useState<Screen>('home');
+  const [prevScreen, setPrevScreen] = useState<Screen>('home');
+  const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [toast, setToast] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [adminStats, setAdminStats] = useState({ listings: 0, users: 0, reports: 0 });
+
+  const showToast = useCallback((msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), 3000);
+  }, []);
+
+  const loadProfile = useCallback(async (userId: string) => {
+    const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+    setProfile(data as Profile | null);
+    return data as Profile | null;
+  }, []);
+
+  const loadAdminStats = useCallback(async () => {
+    const [{ count: listings }, { count: users }, { count: reports }] = await Promise.all([
+      supabase.from('listings').select('*', { count: 'exact', head: true }),
+      supabase.from('profiles').select('*', { count: 'exact', head: true }),
+      supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+    ]);
+    setAdminStats({ listings: listings || 0, users: users || 0, reports: reports || 0 });
+  }, []);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) await loadProfile(session.user.id);
+      setCheckingAuth(false);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) await loadProfile(session.user.id);
+      else { setProfile(null); setScreen('home'); }
+    });
+    return () => subscription.unsubscribe();
+  }, [loadProfile]);
+
+  function goTo(s: Screen) {
+    setPrevScreen(screen);
+    setScreen(s);
+    setMenuOpen(false);
+    if (s === 'admin') loadAdminStats();
+  }
+
+  function goBack() {
+    setScreen(prevScreen);
+  }
+
+  function openListing(id: string) {
+    setSelectedListingId(id);
+    setPrevScreen(screen);
+    setScreen('detail');
+  }
+
+  function openCategory(cat: Category) {
+    setSelectedCategory(cat);
+    setPrevScreen(screen);
+    setScreen('search');
+  }
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    setMenuOpen(false);
+  }
+
+  if (checkingAuth) {
+    return (
+      <div className="h-[100dvh] flex items-center justify-center bg-[#1E5C20]">
+        <div className="w-10 h-10 border-2 border-white border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) return <AuthScreen onSuccess={() => setScreen('home')} />;
+
+  function renderScreen() {
+    switch (screen) {
+      case 'home':
+        return (
+          <HomeScreen
+            onSearch={() => goTo('search')}
+            onCategory={openCategory}
+            onListing={openListing}
+            user={user}
+          />
+        );
+      case 'search':
+        return (
+          <SearchScreen
+            onBack={goBack}
+            onListing={openListing}
+            initialCategory={selectedCategory}
+          />
+        );
+      case 'detail':
+        return selectedListingId ? (
+          <DetailScreen
+            id={selectedListingId}
+            user={user}
+            onBack={goBack}
+            showToast={showToast}
+          />
+        ) : null;
+      case 'publish':
+        return (
+          <PublishScreen
+            user={user}
+            userProfile={profile}
+            onBack={goBack}
+            onSuccess={() => goTo('home')}
+          />
+        );
+      case 'favorites':
+        return (
+          <FavoritesScreen
+            user={user}
+            onBack={goBack}
+            onListing={openListing}
+          />
+        );
+      case 'profile':
+        return (
+          <ProfileScreen
+            user={user}
+            profile={profile}
+            onLogout={handleLogout}
+            isAdmin={profile?.role === 'admin'}
+            onAdmin={() => goTo('admin')}
+            onFavorites={() => goTo('favorites')}
+            showToast={showToast}
+            onProfileUpdate={() => loadProfile(user.id)}
+          />
+        );
+      case 'admin':
+        return <AdminDashboard onNavigate={goTo} stats={adminStats} />;
+      case 'admin-listings':
+        return <AdminListingsScreen onBack={() => goTo('admin')} showToast={showToast} />;
+      case 'admin-reports':
+        return <AdminReportsScreen onBack={() => goTo('admin')} showToast={showToast} />;
+      case 'admin-users':
+        return <AdminUsersScreen onBack={() => goTo('admin')} showToast={showToast} />;
+      default:
+        return (
+          <HomeScreen
+            onSearch={() => goTo('search')}
+            onCategory={openCategory}
+            onListing={openListing}
+            user={user}
+          />
+        );
+    }
+  }
+
+  const isAdminScreen = screen.startsWith('admin');
+  const showNav = !isAdminScreen && screen !== 'detail' && screen !== 'publish';
+
+  return (
+    <div className="h-[100dvh] flex flex-col bg-[#FAFAF8] max-w-[430px] mx-auto relative overflow-hidden">
+      <StatusBar />
+
+      {menuOpen && (
+        <div className="absolute inset-0 z-40 flex">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setMenuOpen(false)} />
+          <div className="relative w-72 bg-white h-full flex flex-col shadow-2xl">
+            <div className="bg-gradient-to-br from-[#133D15] to-[#1E5C20] p-5 pt-10">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-white font-extrabold text-lg">Menu</h2>
+                <button onClick={() => setMenuOpen(false)} className="text-white/70"><XCircle className="w-6 h-6" /></button>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg">
+                  {profile?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
+                </div>
+                <div>
+                  <p className="text-white font-bold text-sm">{profile?.name || 'Utilisateur'}</p>
+                  <p className="text-white/60 text-xs">{profile?.phone || user?.email}</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 py-2">
+              {[
+                { icon: PlusCircle, label: 'Publier une annonce', s: 'publish' as Screen },
+                { icon: Heart, label: 'Mes favoris', s: 'favorites' as Screen },
+                ...(profile?.role === 'admin' ? [
+                  { icon: LayoutDashboard, label: 'Dashboard Admin', s: 'admin' as Screen },
+                  { icon: FileText, label: 'Gérer annonces', s: 'admin-listings' as Screen },
+                  { icon: Flag, label: 'Signalements', s: 'admin-reports' as Screen },
+                  { icon: Users, label: 'Utilisateurs', s: 'admin-users' as Screen },
+                ] : []),
+              ].map(({ icon: Icon, label, s }) => (
+                <button key={s} onClick={() => goTo(s)} className="w-full flex items-center gap-3 px-5 py-3 hover:bg-gray-50 text-left">
+                  <Icon className="w-5 h-5 text-[#1E5C20]" />
+                  <span className="text-sm font-semibold">{label}</span>
+                </button>
+              ))}
+            </div>
+            <div className="border-t border-gray-100 p-4">
+              <button onClick={handleLogout} className="w-full flex items-center gap-3 px-1 py-2 text-red-600">
+                <LogOut className="w-5 h-5" />
+                <span className="text-sm font-semibold">Se déconnecter</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className={`flex flex-col flex-1 min-h-0 overflow-hidden ${showNav ? 'pb-16' : ''}`}>
+        {renderScreen()}
+      </div>
+
+      {showNav && (
+        <div className="absolute bottom-0 left-0 right-0">
+          <BottomNav screen={screen} onNavigate={goTo} onMenuOpen={() => setMenuOpen(true)} />
+        </div>
+      )}
+
+      {isAdminScreen && (
+        <button onClick={() => setMenuOpen(true)} className="absolute top-3 right-4 z-30 w-9 h-9 flex items-center justify-center rounded-full bg-white/20">
+          <Menu className="w-5 h-5 text-white" />
+        </button>
+      )}
+
+      <Toast message={toast} />
+    </div>
+  );
+}
+
+export default App;

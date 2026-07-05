@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#1E5C20" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <title>SamaVolaille - Marketplace Volaille Sénégal</title>
+    <meta name="description" content="Trouvez et vendez vos volailles au Sénégal : poulets, poussins, canards, dindes, œufs. Marketplace #1 pour les éleveurs sénégalais." />
+    <meta property="og:title" content="SamaVolaille - Marketplace Volaille Sénégal" />
+    <meta property="og:description" content="Trouvez et vendez vos volailles au Sénégal" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/favicon.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SamaVolaille" />
+    <meta name="twitter:description" content="Marketplace #1 pour les volailles au Sénégal" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => { console.log('SW registered:', registration); })
+            .catch((error) => { console.log('SW registration failed:', error); });
+        });
+      }
+    </script>
+  </body>
+</html>

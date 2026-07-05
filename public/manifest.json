@@ -1,0 +1,23 @@
+{
+  "name": "SamaVolaille",
+  "short_name": "SamaVolaille",
+  "description": "Marketplace #1 pour les volailles au Sénégal - Achetez et vendez poulets, poussins, canards, oeufs",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAF8",
+  "theme_color": "#1E5C20",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["shopping", "lifestyle"],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

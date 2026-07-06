@@ -50,17 +50,35 @@ function App() {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) await loadProfile(session.user.id);
-      setCheckingAuth(false);
-    });
+    let mounted = true;
+    const timeout = setTimeout(() => {
+      if (mounted) setCheckingAuth(false);
+    }, 3000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mounted) return;
       setUser(session?.user ?? null);
-      if (session?.user) await loadProfile(session.user.id);
-      else { setProfile(null); setScreen('home'); }
+      if (session?.user) {
+        try { await loadProfile(session.user.id); } catch {}
+      } else { setProfile(null); }
+      setCheckingAuth(false);
+      clearTimeout(timeout);
     });
-    return () => subscription.unsubscribe();
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      if (!session) {
+        setCheckingAuth(false);
+        clearTimeout(timeout);
+      }
+    }).catch(() => {
+      if (mounted) {
+        setCheckingAuth(false);
+        clearTimeout(timeout);
+      }
+    });
+
+    return () => { mounted = false; clearTimeout(timeout); subscription.unsubscribe(); };
   }, [loadProfile]);
 
   function goTo(s: Screen) {

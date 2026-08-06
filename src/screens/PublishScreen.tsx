@@ -3,6 +3,7 @@ import { ArrowLeft, Loader2, MessageCircle } from 'lucide-react';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../lib/supabase';
 import type { Category, Profile, ModerationResult } from '../types/database';
 import ImageUpload from '../components/ImageUpload';
+import { CATEGORY_FIELDS, type CategoryField } from '../categoryFields';
 
 export default function PublishScreen({ onBack, onSuccess, user, userProfile }: {
   onBack: () => void;
@@ -20,6 +21,7 @@ export default function PublishScreen({ onBack, onSuccess, user, userProfile }: 
   const [phone, setPhone] = useState(userProfile?.phone || '');
   const [images, setImages] = useState<string[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [attributes, setAttributes] = useState<Record<string, string | number | boolean>>({});
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState('');
 
@@ -28,6 +30,13 @@ export default function PublishScreen({ onBack, onSuccess, user, userProfile }: 
       if (data) setCategories(data);
     });
   }, []);
+
+  const selectedCategory = categories.find((c) => c.id === category);
+  const categoryFields: CategoryField[] = selectedCategory ? CATEGORY_FIELDS[selectedCategory.slug] || [] : [];
+
+  function setAttribute(key: string, value: string | number | boolean) {
+    setAttributes((prev) => ({ ...prev, [key]: value }));
+  }
 
   async function handleImageUpload(files: FileList) {
     for (let i = 0; i < files.length && images.length < 5; i++) {
@@ -59,6 +68,7 @@ export default function PublishScreen({ onBack, onSuccess, user, userProfile }: 
       const { error } = await supabase.from('listings').insert({
         title, description, price: parseInt(price), price_unit: priceUnit,
         quantity: parseInt(quantity), category_id: category, location, phone, user_id: user.id, images,
+        attributes,
       });
       if (error) throw error;
       setToast('Annonce publiée !');
@@ -90,11 +100,53 @@ export default function PublishScreen({ onBack, onSuccess, user, userProfile }: 
           </div>
           <div>
             <label className="text-xs font-bold text-gray-400 uppercase tracking-wide block mb-1.5">Catégorie *</label>
-            <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full border-2 border-gray-200 rounded-lg px-3.5 py-3 text-sm focus:border-[#1E5C20] outline-none transition-colors appearance-none bg-white">
+            <select value={category} onChange={(e) => { setCategory(e.target.value); setAttributes({}); }} className="w-full border-2 border-gray-200 rounded-lg px-3.5 py-3 text-sm focus:border-[#1E5C20] outline-none transition-colors appearance-none bg-white">
               <option value="">Choisir...</option>
               {categories.map((cat) => <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>)}
             </select>
           </div>
+          {categoryFields.length > 0 && (
+            <div className="space-y-4 bg-[#EEF6EE] rounded-lg p-3.5 border border-[#1E5C20]/10">
+              <p className="text-xs font-bold text-[#1E5C20] uppercase tracking-wide">Détails {selectedCategory?.name}</p>
+              {categoryFields.map((field) => (
+                <div key={field.key}>
+                  {field.type === 'boolean' ? (
+                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={!!attributes[field.key]}
+                        onChange={(e) => setAttribute(field.key, e.target.checked)}
+                        className="w-4 h-4 accent-[#1E5C20]"
+                      />
+                      {field.label}
+                    </label>
+                  ) : (
+                    <>
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-wide block mb-1.5">{field.label}</label>
+                      {field.type === 'select' ? (
+                        <select
+                          value={(attributes[field.key] as string) || ''}
+                          onChange={(e) => setAttribute(field.key, e.target.value)}
+                          className="w-full border-2 border-gray-200 rounded-lg px-3.5 py-3 text-sm focus:border-[#1E5C20] outline-none transition-colors appearance-none bg-white"
+                        >
+                          <option value="">Choisir...</option>
+                          {field.options?.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                      ) : (
+                        <input
+                          type={field.type}
+                          value={(attributes[field.key] as string) || ''}
+                          onChange={(e) => setAttribute(field.key, e.target.value)}
+                          placeholder={field.placeholder}
+                          className="w-full border-2 border-gray-200 rounded-lg px-3.5 py-3 text-sm focus:border-[#1E5C20] outline-none transition-colors"
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-bold text-gray-400 uppercase tracking-wide block mb-1.5">Prix (FCFA) *</label>

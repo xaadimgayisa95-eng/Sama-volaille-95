@@ -22,7 +22,6 @@ export default function HomeScreen({
   const [featured, setFeatured] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState<string>('');
 
   useEffect(() => { loadData(); }, []);
 
@@ -46,8 +45,6 @@ export default function HomeScreen({
     }
   }
 
-  const filteredListings = activeFilter ? listings.filter((l) => l.category?.name === activeFilter) : listings;
-
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <div className="bg-[#1E5C20] px-4 py-3 flex items-center gap-3 shrink-0 shadow-md">
@@ -55,9 +52,6 @@ export default function HomeScreen({
           <div className="w-9 h-9 bg-[#F5C518] rounded-lg flex items-center justify-center text-lg">🐓</div>
           <span className="font-extrabold text-lg text-white">Sama<span className="text-[#F5C518]">Volaille</span></span>
         </div>
-        <button onClick={onSearch} className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-          <Search className="w-5 h-5 text-white" />
-        </button>
         <button className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
           <Bell className="w-5 h-5 text-white" />
         </button>
@@ -88,45 +82,9 @@ export default function HomeScreen({
           </div>
         </div>
 
-        <div className="flex gap-3 px-4 py-3.5 overflow-x-auto no-scrollbar">
-          <button onClick={() => setActiveFilter('')} className="flex flex-col items-center gap-1 flex-shrink-0">
-            <div className={`w-14 h-14 rounded-full overflow-hidden border-2 transition-all flex items-center justify-center bg-[#EEF6EE] ${activeFilter === '' ? 'border-[#1E5C20]' : 'border-gray-200'}`}>
-              <span className="text-lg font-bold text-[#1E5C20]">Tous</span>
-            </div>
-            <span className={`text-[9px] font-bold whitespace-nowrap ${activeFilter === '' ? 'text-[#1E5C20]' : 'text-gray-500'}`}>Tous</span>
-          </button>
-          {categories.map((cat) => (
-            <button key={cat.id} onClick={() => setActiveFilter(cat.name)} className="flex flex-col items-center gap-1 flex-shrink-0">
-              <div className={`w-14 h-14 rounded-full overflow-hidden border-2 transition-all ${activeFilter === cat.name ? 'border-[#1E5C20]' : 'border-gray-200'}`}>
-                {cat.image_url ? (
-                  <img src={cat.image_url} alt={cat.name} onError={handleImgError} className="w-full h-full object-cover" loading="lazy" />
-                ) : (
-                  <span className="text-lg flex items-center justify-center w-full h-full bg-[#EEF6EE]">{cat.icon}</span>
-                )}
-              </div>
-              <span className={`text-[9px] font-bold whitespace-nowrap max-w-[60px] truncate ${activeFilter === cat.name ? 'text-[#1E5C20]' : 'text-gray-500'}`}>{cat.name}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-3 gap-2 px-4 pb-4">
-          <div className="bg-white border border-gray-200 rounded-lg p-3 text-center">
-            <span className="font-extrabold text-xl text-[#1E5C20]">{listings.length}</span>
-            <p className="text-[10px] text-gray-500 mt-0.5">Annonces actives</p>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-3 text-center">
-            <span className="font-extrabold text-xl text-[#1E5C20]">{categories.length}</span>
-            <p className="text-[10px] text-gray-500 mt-0.5">Catégories</p>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-3 text-center">
-            <span className="font-extrabold text-xl text-[#1E5C20]">14</span>
-            <p className="text-[10px] text-gray-500 mt-0.5">Régions</p>
-          </div>
-        </div>
-
         {featured.length > 0 && (
           <>
-            <div className="flex justify-between items-center px-4 mb-3">
+            <div className="flex justify-between items-center px-4 pt-4 mb-3">
               <h3 className="font-extrabold text-lg">✨ Annonces vedettes</h3>
               <button onClick={onSearch} className="text-sm text-[#1E5C20] font-semibold">Voir tout</button>
             </div>
@@ -152,20 +110,23 @@ export default function HomeScreen({
           </>
         )}
 
-        <div className="flex justify-between items-center px-4 mb-3">
-          <h3 className="font-extrabold text-lg">Catégories</h3>
-        </div>
-        <div className="grid grid-cols-4 gap-2 px-4 pb-4">
+        <div className="flex gap-3 px-4 py-3.5 overflow-x-auto no-scrollbar">
+          <button onClick={onSearch} className="flex flex-col items-center gap-1 flex-shrink-0">
+            <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-gray-200 transition-all flex items-center justify-center bg-[#EEF6EE]">
+              <span className="text-lg font-bold text-[#1E5C20]">Tous</span>
+            </div>
+            <span className="text-[9px] font-bold whitespace-nowrap text-gray-500">Tous</span>
+          </button>
           {categories.map((cat) => (
-            <button key={cat.id} onClick={() => onCategory(cat)} className="bg-white border-2 border-gray-200 rounded-xl p-2 text-center active:bg-[#EEF6EE] active:border-[#1E5C20] transition-all">
-              <div className="w-full aspect-square rounded-lg overflow-hidden bg-[#EEF6EE] mb-1">
+            <button key={cat.id} onClick={() => onCategory(cat)} className="flex flex-col items-center gap-1 flex-shrink-0">
+              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-gray-200 transition-all active:border-[#1E5C20]">
                 {cat.image_url ? (
                   <img src={cat.image_url} alt={cat.name} onError={handleImgError} className="w-full h-full object-cover" loading="lazy" />
                 ) : (
-                  <span className="text-xl flex items-center justify-center w-full h-full">{cat.icon}</span>
+                  <span className="text-lg flex items-center justify-center w-full h-full bg-[#EEF6EE]">{cat.icon}</span>
                 )}
               </div>
-              <p className="font-bold text-[9px] truncate">{cat.name}</p>
+              <span className="text-[9px] font-bold whitespace-nowrap max-w-[60px] truncate text-gray-500">{cat.name}</span>
             </button>
           ))}
         </div>
@@ -177,13 +138,13 @@ export default function HomeScreen({
         <div className="flex flex-col gap-2.5 px-4 pb-6">
           {loading ? (
             <div className="flex justify-center py-8"><Loader2 className="w-8 h-8 animate-spin text-[#1E5C20]" /></div>
-          ) : filteredListings.length === 0 ? (
+          ) : listings.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
               <p>Aucune annonce disponible</p>
             </div>
           ) : (
-            filteredListings.map((listing) => (
+            listings.map((listing) => (
               <div key={listing.id} onClick={() => onListing(listing.id)} className="bg-white border border-gray-200 rounded-xl flex overflow-hidden cursor-pointer active:scale-[0.98] transition-transform">
                 <div className="w-24 h-24 bg-[#EEF6EE] flex items-center justify-center text-4xl shrink-0 relative overflow-hidden">
                   {listing.images?.[0] ? (

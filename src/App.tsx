@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from './lib/supabase';
-import { Menu, XCircle, Flag, Users, FileText, LayoutDashboard, LogOut, Heart, PlusCircle } from 'lucide-react';
+import { Menu, XCircle, Flag, Users, FileText, LayoutDashboard, LogOut, Heart, PlusCircle, ArrowLeft } from 'lucide-react';
 import type { Category, Listing, Profile, Screen } from './types/database';
-import StatusBar from './components/StatusBar';
 import BottomNav from './components/BottomNav';
 import Toast from './components/Toast';
 import HomeScreen from './screens/HomeScreen';
@@ -17,12 +16,16 @@ import AdminListingsScreen from './screens/AdminListingsScreen';
 import AdminReportsScreen from './screens/AdminReportsScreen';
 import AdminUsersScreen from './screens/AdminUsersScreen';
 
+// Screens that require a logged-in user; everything else is open to guests.
+const AUTH_REQUIRED_SCREENS: Screen[] = ['publish', 'favorites', 'profile', 'admin', 'admin-listings', 'admin-reports', 'admin-users'];
+
 function App() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [screen, setScreen] = useState<Screen>('home');
   const [prevScreen, setPrevScreen] = useState<Screen>('home');
+  const [pendingScreen, setPendingScreen] = useState<Screen | null>(null);
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [toast, setToast] = useState('');
@@ -82,6 +85,13 @@ function App() {
   }, [loadProfile]);
 
   function goTo(s: Screen) {
+    if (AUTH_REQUIRED_SCREENS.includes(s) && !user) {
+      setPendingScreen(s);
+      setPrevScreen(screen);
+      setScreen('auth');
+      setMenuOpen(false);
+      return;
+    }
     setPrevScreen(screen);
     setScreen(s);
     setMenuOpen(false);
@@ -117,7 +127,26 @@ function App() {
     );
   }
 
-  if (!user) return <AuthScreen onSuccess={() => setScreen('home')} />;
+  if (screen === 'auth') {
+    return (
+      <div className="relative h-[100dvh]">
+        <button
+          onClick={() => { setPendingScreen(null); setScreen(prevScreen); }}
+          className="absolute top-4 left-4 z-10 w-9 h-9 rounded-full bg-black/20 flex items-center justify-center text-white"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <AuthScreen
+          onSuccess={() => {
+            const dest = pendingScreen || 'home';
+            setPendingScreen(null);
+            setScreen(dest);
+            if (dest === 'admin') loadAdminStats();
+          }}
+        />
+      </div>
+    );
+  }
 
   function renderScreen() {
     switch (screen) {
@@ -202,7 +231,6 @@ function App() {
 
   return (
     <div className="h-[100dvh] flex flex-col bg-[#FAFAF8] max-w-[430px] mx-auto relative overflow-hidden">
-      <StatusBar />
 
       {menuOpen && (
         <div className="absolute inset-0 z-40 flex">

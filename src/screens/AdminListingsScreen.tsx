@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Loader2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Trash2, Star } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Listing } from '../types/database';
 import { getImageUrl, formatPrice } from '../utils';
@@ -31,6 +31,14 @@ export default function AdminListingsScreen({ onBack, showToast }: { onBack: () 
     if (!error) { setListings((prev) => prev.map((l) => (l.id === id ? { ...l, status: status as any } : l))); showToast('Statut mis à jour'); }
   }
 
+  async function handleToggleFeatured(id: string, current: boolean) {
+    const { error } = await supabase.from('listings').update({ featured: !current }).eq('id', id);
+    if (!error) {
+      setListings((prev) => prev.map((l) => (l.id === id ? { ...l, featured: !current } : l)));
+      showToast(!current ? 'Annonce mise en avant' : 'Mise en avant retirée');
+    } else showToast('Erreur');
+  }
+
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <div className="bg-[#1E5C20] px-4 py-3 flex items-center gap-3 shrink-0">
@@ -60,11 +68,21 @@ export default function AdminListingsScreen({ onBack, showToast }: { onBack: () 
                   <div className="flex items-center gap-2">
                     <h4 className="font-bold text-sm truncate">{listing.title}</h4>
                     <Badge status={listing.status} />
+                    {listing.featured && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#F5C518] text-black uppercase tracking-wide shrink-0">Mis en avant</span>
+                    )}
                   </div>
                   <p className="text-xs text-gray-400 mt-0.5">{listing.category?.name} • {listing.profile?.name || 'Anonyme'}</p>
                   <p className="font-bold text-sm mt-1">{formatPrice(listing.price)}</p>
                 </div>
                 <div className="flex gap-1">
+                  <button
+                    onClick={() => handleToggleFeatured(listing.id, listing.featured)}
+                    title={listing.featured ? 'Retirer la mise en avant' : 'Mettre en avant'}
+                    className={`p-1.5 rounded ${listing.featured ? 'text-[#F5C518] bg-[#F5C518]/10' : 'text-gray-400 hover:bg-gray-100'}`}
+                  >
+                    <Star className={`w-4 h-4 ${listing.featured ? 'fill-current' : ''}`} />
+                  </button>
                   <select value={listing.status} onChange={(e) => handleStatusChange(listing.id, e.target.value)} className="text-xs border rounded px-1.5 py-1">
                     <option value="available">Disponible</option>
                     <option value="reserved">Réservé</option>

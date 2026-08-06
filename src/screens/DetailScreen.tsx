@@ -4,6 +4,7 @@ import { supabase, supabaseUrl, supabaseAnonKey } from '../lib/supabase';
 import type { Listing } from '../types/database';
 import { getImageUrl, handleImgError, formatPrice } from '../utils';
 import Badge from '../components/Badge';
+import { CATEGORY_FIELDS } from '../categoryFields';
 
 export default function DetailScreen({
   id,
@@ -174,6 +175,24 @@ export default function DetailScreen({
           <hr className="my-4 border-gray-200" />
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Description</p>
           <p className="text-sm text-gray-600 leading-relaxed">{listing.description || 'Aucune description fournie.'}</p>
+          {listing.attributes && Object.keys(listing.attributes).length > 0 && (
+            <>
+              <hr className="my-4 border-gray-200" />
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Détails</p>
+              <div className="grid grid-cols-2 gap-2.5">
+                {(CATEGORY_FIELDS[listing.category?.slug || ''] || []).map((field) => {
+                  const value = listing.attributes[field.key];
+                  if (value === undefined || value === '' || value === false) return null;
+                  return (
+                    <div key={field.key} className="bg-gray-50 rounded-lg p-2.5">
+                      <p className="text-[10px] text-gray-400 font-semibold uppercase">{field.label}</p>
+                      <p className="text-sm font-bold text-gray-700 mt-0.5">{field.type === 'boolean' ? 'Oui' : String(value)}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
           <hr className="my-4 border-gray-200" />
           <div className="bg-gray-50 rounded-xl p-3.5 flex items-center gap-3">
             <div className="w-11 h-11 rounded-full bg-[#1E5C20] flex items-center justify-center text-white text-lg shrink-0">

@@ -36,6 +36,7 @@ export interface Listing {
   status: 'available' | 'reserved' | 'sold';
   featured: boolean;
   images: string[];
+  attributes: Record<string, string | number | boolean>;
   created_at: string;
   category?: Category;
   profile?: Profile;
@@ -70,7 +71,7 @@ export interface UserRole {
   created_at: string;
 }
 
-export type Screen = 'home' | 'search' | 'publish' | 'profile' | 'detail' | 'favorites' | 'admin' | 'admin-listings' | 'admin-reports' | 'admin-users';
+export type Screen = 'home' | 'search' | 'publish' | 'profile' | 'detail' | 'favorites' | 'admin' | 'admin-listings' | 'admin-reports' | 'admin-users' | 'auth';
 
 export interface ModerationResult {
   isAppropriate: boolean;

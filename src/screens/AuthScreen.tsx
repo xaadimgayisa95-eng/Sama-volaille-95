@@ -20,7 +20,11 @@ export default function AuthScreen({ onSuccess }: { onSuccess: () => void }) {
         options: { redirectTo: window.location.origin, queryParams: { prompt: 'select_account' } },
       });
       if (error) throw error;
-    } catch (err: any) { setError(err.message || 'Erreur Google'); setGoogleLoading(false); }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || 'Erreur Google');
+      setGoogleLoading(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -35,8 +39,12 @@ export default function AuthScreen({ onSuccess }: { onSuccess: () => void }) {
         if (data.user) await supabase.from('profiles').insert({ id: data.user.id, name, phone });
       }
       onSuccess();
-    } catch (err: any) { setError(err.message || 'Erreur'); }
-    finally { setLoading(false); }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || 'Erreur');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

@@ -26,7 +26,10 @@ export default function DetailScreen({
   const [currentImage, setCurrentImage] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
-  useEffect(() => { loadListing(); }, [id]);
+  useEffect(() => {
+    loadListing();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   async function loadListing() {
     try {

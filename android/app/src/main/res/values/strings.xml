@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Sama Volaille 95</string>
+    <string name="title_activity_main">Sama Volaille 95</string>
+    <string name="package_name">com.samavolaille95.app</string>
+    <string name="custom_url_scheme">com.samavolaille95.app</string>
+</resources>

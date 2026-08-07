@@ -15,9 +15,10 @@ import AdminDashboard from './screens/AdminDashboard';
 import AdminListingsScreen from './screens/AdminListingsScreen';
 import AdminReportsScreen from './screens/AdminReportsScreen';
 import AdminUsersScreen from './screens/AdminUsersScreen';
+import AdminSettingsScreen from './screens/AdminSettingsScreen';
 
 // Screens that require a logged-in user; everything else is open to guests.
-const AUTH_REQUIRED_SCREENS: Screen[] = ['publish', 'favorites', 'profile', 'admin', 'admin-listings', 'admin-reports', 'admin-users'];
+const AUTH_REQUIRED_SCREENS: Screen[] = ['publish', 'favorites', 'profile', 'admin', 'admin-listings', 'admin-reports', 'admin-users', 'admin-settings'];
 
 function App() {
   const [user, setUser] = useState<any>(null);
@@ -214,6 +215,8 @@ function App() {
         return <AdminReportsScreen onBack={() => goTo('admin')} showToast={showToast} />;
       case 'admin-users':
         return <AdminUsersScreen onBack={() => goTo('admin')} showToast={showToast} />;
+      case 'admin-settings':
+        return <AdminSettingsScreen onBack={() => goTo('admin')} showToast={showToast} />;
       default:
         return (
           <HomeScreen

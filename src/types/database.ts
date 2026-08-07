@@ -71,7 +71,7 @@ export interface UserRole {
   created_at: string;
 }
 
-export type Screen = 'home' | 'search' | 'publish' | 'profile' | 'detail' | 'favorites' | 'admin' | 'admin-listings' | 'admin-reports' | 'admin-users' | 'auth';
+export type Screen = 'home' | 'search' | 'publish' | 'profile' | 'detail' | 'favorites' | 'admin' | 'admin-listings' | 'admin-reports' | 'admin-users' | 'admin-settings' | 'auth';
 
 export interface ModerationResult {
   isAppropriate: boolean;

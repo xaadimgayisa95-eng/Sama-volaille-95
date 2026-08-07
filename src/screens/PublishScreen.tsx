@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Loader2, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, MessageCircle, CheckCircle2 } from 'lucide-react';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../lib/supabase';
 import type { Category, Profile, ModerationResult } from '../types/database';
 import ImageUpload from '../components/ImageUpload';
 import { CATEGORY_FIELDS, type CategoryField } from '../categoryFields';
 import { SENEGAL_CITIES } from '../senegalCities';
+import FeatureListingPrompt from '../components/FeatureListingPrompt';
 
 export default function PublishScreen({ onBack, onSuccess, user, userProfile }: {
   onBack: () => void;
@@ -25,6 +26,7 @@ export default function PublishScreen({ onBack, onSuccess, user, userProfile }: 
   const [attributes, setAttributes] = useState<Record<string, string | number | boolean>>({});
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState('');
+  const [published, setPublished] = useState<{ id: string; title: string } | null>(null);
 
   useEffect(() => {
     supabase.from('categories').select('*').order('sort_order').then(({ data }) => {
@@ -66,14 +68,13 @@ export default function PublishScreen({ onBack, onSuccess, user, userProfile }: 
       const moderation: ModerationResult = await moderationRes.json();
       if (moderation.recommendation === 'review') setToast(`Attention: ${moderation.flags.join(', ')}`);
 
-      const { error } = await supabase.from('listings').insert({
+      const { data: inserted, error } = await supabase.from('listings').insert({
         title, description, price: parseInt(price), price_unit: priceUnit,
         quantity: parseInt(quantity), category_id: category, location, phone, user_id: user.id, images,
         attributes,
-      });
+      }).select('id').single();
       if (error) throw error;
-      setToast('Annonce publiée !');
-      setTimeout(() => onSuccess(), 1500);
+      setPublished({ id: inserted.id, title });
     } catch (err) {
       console.error(err);
       setToast('Erreur');
@@ -81,6 +82,25 @@ export default function PublishScreen({ onBack, onSuccess, user, userProfile }: 
     } finally {
       setLoading(false);
     }
+  }
+
+  if (published) {
+    return (
+      <div className="flex flex-col flex-1 min-h-0">
+        <div className="bg-[#1E5C20] px-4 py-3 flex items-center gap-3 shrink-0">
+          <h1 className="flex-1 text-white font-extrabold text-lg">Nouvelle annonce</h1>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center text-center pt-10">
+          <CheckCircle2 className="w-14 h-14 text-[#1E5C20] mb-3" />
+          <p className="font-extrabold text-lg">Annonce publiée !</p>
+          <p className="text-sm text-gray-500 mt-1 mb-4">Elle est maintenant visible sur SamaVolaille.</p>
+          <FeatureListingPrompt listingId={published.id} listingTitle={published.title} />
+          <button onClick={onSuccess} className="w-full mt-8 bg-[#1E5C20] text-white rounded-lg py-3.5 font-extrabold text-base">
+            Retour à l'accueil
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

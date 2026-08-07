@@ -5,6 +5,7 @@ import type { Listing } from '../types/database';
 import { getImageUrl, handleImgError, formatPrice, isVideo } from '../utils';
 import Badge from '../components/Badge';
 import { CATEGORY_FIELDS } from '../categoryFields';
+import FeatureListingPrompt from '../components/FeatureListingPrompt';
 
 export default function DetailScreen({
   id,
@@ -177,6 +178,9 @@ export default function DetailScreen({
             {formatPrice(listing.price)}
             {listing.price_unit && <span className="text-sm font-normal text-gray-400"> /{listing.price_unit}</span>}
           </p>
+          {isOwner && !listing.featured && (
+            <FeatureListingPrompt listingId={listing.id} listingTitle={listing.title} />
+          )}
           <div className="flex flex-wrap gap-3 mt-4 text-sm text-gray-500">
             <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4" />{listing.location || 'Dakar'}</span>
             <span className="flex items-center gap-1.5"><Package className="w-4 h-4" />{listing.quantity} disponible(s)</span>

@@ -42,6 +42,7 @@ export default function SearchScreen({
       if (data) setCategories(data);
     });
     search();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

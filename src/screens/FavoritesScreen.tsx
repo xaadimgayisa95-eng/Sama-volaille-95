@@ -16,10 +16,13 @@ export default function FavoritesScreen({ onBack, onListing, user }: {
   useEffect(() => {
     supabase.from('favorites').select('listing:listings(*, category:categories(*))').eq('user_id', user.id).order('created_at', { ascending: false })
       .then(({ data }) => {
-        if (data) setFavorites(data.map((f: any) => f.listing).filter(Boolean));
+        if (data) {
+          const list = data.map((f) => f.listing) as unknown as Listing[];
+          setFavorites(list.filter(Boolean));
+        }
         setLoading(false);
       });
-  }, []);
+  }, [user.id]);
 
   return (
     <div className="flex flex-col flex-1 min-h-0">

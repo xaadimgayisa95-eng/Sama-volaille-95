@@ -1,7 +1,7 @@
 import { Home, Search, PlusCircle, Heart, User } from 'lucide-react';
 import type { Screen } from '../types/database';
 
-export default function BottomNav({ screen, onNavigate, onMenuOpen }: { screen: Screen; onNavigate: (s: Screen) => void; onMenuOpen: () => void }) {
+export default function BottomNav({ screen, onNavigate }: { screen: Screen; onNavigate: (s: Screen) => void; onMenuOpen?: () => void }) {
   const active = screen;
   const items = [
     { id: 'home' as Screen, icon: Home, label: 'Accueil' },

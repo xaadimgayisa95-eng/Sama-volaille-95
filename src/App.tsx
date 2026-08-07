@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from './lib/supabase';
 import { Menu, XCircle, Flag, Users, FileText, LayoutDashboard, LogOut, Heart, PlusCircle, ArrowLeft } from 'lucide-react';
-import type { Category, Listing, Profile, Screen } from './types/database';
+import type { Category, Profile, Screen } from './types/database';
 import BottomNav from './components/BottomNav';
 import Toast from './components/Toast';
 import HomeScreen from './screens/HomeScreen';
@@ -21,8 +21,10 @@ import AdminCategoriesScreen from './screens/AdminCategoriesScreen';
 // Screens that require a logged-in user; everything else is open to guests.
 const AUTH_REQUIRED_SCREENS: Screen[] = ['publish', 'favorites', 'profile', 'admin', 'admin-listings', 'admin-reports', 'admin-users', 'admin-settings', 'admin-categories'];
 
+import type { User } from '@supabase/supabase-js';
+
 function App() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [screen, setScreen] = useState<Screen>('home');
@@ -36,7 +38,8 @@ function App() {
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
-    setTimeout(() => setToast(''), 3000);
+    const t = setTimeout(() => setToast(''), 3000);
+    return () => clearTimeout(t);
   }, []);
 
   const loadProfile = useCallback(async (userId: string) => {
@@ -64,7 +67,9 @@ function App() {
       if (!mounted) return;
       setUser(session?.user ?? null);
       if (session?.user) {
-        try { await loadProfile(session.user.id); } catch {}
+        loadProfile(session.user.id).catch((e) => {
+          console.error("Error loading profile:", e);
+        });
       } else { setProfile(null); }
       setCheckingAuth(false);
       clearTimeout(timeout);
@@ -158,7 +163,7 @@ function App() {
             onSearch={() => goTo('search')}
             onCategory={openCategory}
             onListing={openListing}
-            user={user}
+            user={user || undefined}
           />
         );
       case 'search':
@@ -179,26 +184,26 @@ function App() {
           />
         ) : null;
       case 'publish':
-        return (
+        return user ? (
           <PublishScreen
             user={user}
             userProfile={profile}
             onBack={goBack}
             onSuccess={() => goTo('home')}
           />
-        );
+        ) : null;
       case 'favorites':
-        return (
+        return user ? (
           <FavoritesScreen
             user={user}
             onBack={goBack}
             onListing={openListing}
           />
-        );
+        ) : null;
       case 'profile':
-        return (
+        return user ? (
           <ProfileScreen
-            user={user}
+            user={user as { id: string; email: string }}
             profile={profile}
             onLogout={handleLogout}
             isAdmin={profile?.role === 'admin'}
@@ -207,7 +212,7 @@ function App() {
             showToast={showToast}
             onProfileUpdate={() => loadProfile(user.id)}
           />
-        );
+        ) : null;
       case 'admin':
         return <AdminDashboard onNavigate={goTo} stats={adminStats} />;
       case 'admin-listings':

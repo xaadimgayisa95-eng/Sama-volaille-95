@@ -1,4 +1,4 @@
-import { FileText, Flag, Users, Settings, ChevronRight } from 'lucide-react';
+import { FileText, Flag, Users, Settings, Image, ChevronRight } from 'lucide-react';
 import type { Screen } from '../types/database';
 
 export default function AdminDashboard({
@@ -12,6 +12,7 @@ export default function AdminDashboard({
     { icon: FileText, label: 'Gérer les annonces', screen: 'admin-listings' as Screen, count: stats.listings },
     { icon: Flag, label: 'Signalements', screen: 'admin-reports' as Screen, count: stats.reports },
     { icon: Users, label: 'Utilisateurs', screen: 'admin-users' as Screen, count: stats.users },
+    { icon: Image, label: 'Photos des catégories', screen: 'admin-categories' as Screen, count: 0 },
     { icon: Settings, label: 'Paiement & mise en avant', screen: 'admin-settings' as Screen, count: 0 },
   ];
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Camera, X, Loader2 } from 'lucide-react';
-import { getImageUrl, handleImgError } from '../utils';
+import { Camera, X, Loader2, Video } from 'lucide-react';
+import { getImageUrl, handleImgError, isVideo } from '../utils';
 
 export default function ImageUpload({ images, onUpload, onRemove }: {
   images: string[];
@@ -23,12 +23,21 @@ export default function ImageUpload({ images, onUpload, onRemove }: {
       <div className="flex gap-2 overflow-x-auto pb-2">
         {images.map((img, idx) => (
           <div key={idx} className="relative shrink-0">
-            <img
-              src={getImageUrl(img) || img}
-              alt=""
-              onError={handleImgError}
-              className="w-20 h-20 object-cover rounded-lg border border-gray-200"
-            />
+            {isVideo(img) ? (
+              <div className="relative w-20 h-20 rounded-lg border border-gray-200 overflow-hidden bg-black">
+                <video src={getImageUrl(img) || img} className="w-full h-full object-cover" muted />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                  <Video className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            ) : (
+              <img
+                src={getImageUrl(img) || img}
+                alt=""
+                onError={handleImgError}
+                className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+              />
+            )}
             <button
               onClick={() => onRemove(idx)}
               className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs"
@@ -46,7 +55,7 @@ export default function ImageUpload({ images, onUpload, onRemove }: {
             )}
             <input
               type="file"
-              accept="image/*"
+              accept="image/*,video/*"
               multiple
               onChange={handleFileChange}
               className="hidden"
@@ -56,7 +65,7 @@ export default function ImageUpload({ images, onUpload, onRemove }: {
         )}
       </div>
       {images.length === 0 && (
-        <p className="text-xs text-gray-500 text-center">Ajoutez jusqu'à 5 photos</p>
+        <p className="text-xs text-gray-500 text-center">Ajoutez jusqu'à 5 photos ou vidéos</p>
       )}
     </div>
   );

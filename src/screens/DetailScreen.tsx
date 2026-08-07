@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, Heart, Flag, MapPin, Package, Calendar, Shield, Phone, MessageCircle, Trash2, Loader2 } from 'lucide-react';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../lib/supabase';
 import type { Listing } from '../types/database';
-import { getImageUrl, handleImgError, formatPrice } from '../utils';
+import { getImageUrl, handleImgError, formatPrice, isVideo } from '../utils';
 import Badge from '../components/Badge';
 import { CATEGORY_FIELDS } from '../categoryFields';
 
@@ -140,7 +140,17 @@ export default function DetailScreen({
         >
           {listing.images?.length > 0 ? (
             <>
-              <img src={getImageUrl(listing.images[currentImage]) || listing.images[currentImage]} alt={listing.title} onError={handleImgError} className="w-full h-full object-contain" />
+              {isVideo(listing.images[currentImage]) ? (
+                <video
+                  key={listing.images[currentImage]}
+                  src={getImageUrl(listing.images[currentImage]) || listing.images[currentImage]}
+                  controls
+                  playsInline
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <img src={getImageUrl(listing.images[currentImage]) || listing.images[currentImage]} alt={listing.title} onError={handleImgError} className="w-full h-full object-contain" />
+              )}
               {listing.images.length > 1 && (
                 <>
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">

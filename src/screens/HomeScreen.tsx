@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Search, Bell, Package, MapPin, AlertTriangle, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Category, Listing } from '../types/database';
-import { getImageUrl, handleImgError, formatPrice } from '../utils';
+import { handleImgError, formatPrice } from '../utils';
+import MediaThumb from '../components/MediaThumb';
 
 const SUPABASE_CONFIGURED = import.meta.env.VITE_SUPABASE_URL !== undefined &&
   import.meta.env.VITE_SUPABASE_URL !== 'https://placeholder.supabase.co';
@@ -92,9 +93,7 @@ export default function HomeScreen({
               {featured.map((listing) => (
                 <div key={listing.id} onClick={() => onListing(listing.id)} className="w-40 bg-white border border-gray-200 rounded-xl overflow-hidden shrink-0 cursor-pointer active:scale-97 transition-transform">
                   <div className="h-24 bg-[#EEF6EE] flex items-center justify-center text-4xl relative overflow-hidden">
-                    {listing.images?.[0] ? (
-                      <img src={getImageUrl(listing.images[0]) || listing.images[0]} alt="" onError={handleImgError} className="w-full h-full object-cover" />
-                    ) : (listing.category?.icon || '🐔')}
+                    <MediaThumb path={listing.images?.[0]} fallbackIcon={listing.category?.icon || '🐔'} />
                   </div>
                   <div className="p-2">
                     <p className="text-[10px] font-bold text-[#1E5C20] uppercase tracking-wide truncate">{listing.category?.name}</p>
@@ -147,9 +146,7 @@ export default function HomeScreen({
             listings.map((listing) => (
               <div key={listing.id} onClick={() => onListing(listing.id)} className="bg-white border border-gray-200 rounded-xl flex overflow-hidden cursor-pointer active:scale-[0.98] transition-transform">
                 <div className="w-24 h-24 bg-[#EEF6EE] flex items-center justify-center text-4xl shrink-0 relative overflow-hidden">
-                  {listing.images?.[0] ? (
-                    <img src={getImageUrl(listing.images[0]) || listing.images[0]} alt="" className="w-full h-full object-cover" />
-                  ) : (listing.category?.icon || '🐔')}
+                  <MediaThumb path={listing.images?.[0]} fallbackIcon={listing.category?.icon || '🐔'} />
                 </div>
                 <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
                   <div>

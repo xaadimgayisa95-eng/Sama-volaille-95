@@ -4,6 +4,7 @@ import { supabase, supabaseUrl, supabaseAnonKey } from '../lib/supabase';
 import type { Category, Profile, ModerationResult } from '../types/database';
 import ImageUpload from '../components/ImageUpload';
 import { CATEGORY_FIELDS, type CategoryField } from '../categoryFields';
+import { SENEGAL_CITIES } from '../senegalCities';
 
 export default function PublishScreen({ onBack, onSuccess, user, userProfile }: {
   onBack: () => void;
@@ -164,7 +165,14 @@ export default function PublishScreen({ onBack, onSuccess, user, userProfile }: 
             </div>
             <div>
               <label className="text-xs font-bold text-gray-400 uppercase tracking-wide block mb-1.5">Localisation</label>
-              <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Ex: Dakar" className="w-full border-2 border-gray-200 rounded-lg px-3.5 py-3 text-sm focus:border-[#1E5C20] outline-none transition-colors" />
+              <select value={location} onChange={(e) => setLocation(e.target.value)} className="w-full border-2 border-gray-200 rounded-lg px-3.5 py-3 text-sm focus:border-[#1E5C20] outline-none transition-colors appearance-none bg-white">
+                <option value="">Choisir une ville...</option>
+                {SENEGAL_CITIES.map(({ region, cities }) => (
+                  <optgroup key={region} label={region}>
+                    {cities.map((city) => <option key={city} value={city}>{city}</option>)}
+                  </optgroup>
+                ))}
+              </select>
             </div>
           </div>
           <div>

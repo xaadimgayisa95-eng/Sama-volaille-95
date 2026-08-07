@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, Heart, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Listing } from '../types/database';
-import { getImageUrl, formatPrice } from '../utils';
+import { formatPrice } from '../utils';
+import MediaThumb from '../components/MediaThumb';
 
 export default function FavoritesScreen({ onBack, onListing, user }: {
   onBack: () => void;
@@ -39,9 +40,7 @@ export default function FavoritesScreen({ onBack, onListing, user }: {
             {favorites.map((listing) => (
               <div key={listing.id} onClick={() => onListing(listing.id)} className="bg-white border border-gray-200 rounded-xl flex overflow-hidden cursor-pointer">
                 <div className="w-24 h-24 bg-[#EEF6EE] flex items-center justify-center text-4xl shrink-0 relative overflow-hidden">
-                  {listing.images?.[0] ? (
-                    <img src={getImageUrl(listing.images[0]) || listing.images[0]} alt="" className="w-full h-full object-cover" />
-                  ) : (listing.category?.icon || '🐔')}
+                  <MediaThumb path={listing.images?.[0]} fallbackIcon={listing.category?.icon || '🐔'} />
                 </div>
                 <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
                   <div>

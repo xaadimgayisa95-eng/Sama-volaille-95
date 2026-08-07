@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, Loader2, Trash2, Star } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Listing } from '../types/database';
-import { getImageUrl, formatPrice } from '../utils';
+import { formatPrice } from '../utils';
 import Badge from '../components/Badge';
+import MediaThumb from '../components/MediaThumb';
 
 export default function AdminListingsScreen({ onBack, showToast }: { onBack: () => void; showToast: (msg: string) => void }) {
   const [listings, setListings] = useState<Listing[]>([]);
@@ -60,9 +61,7 @@ export default function AdminListingsScreen({ onBack, showToast }: { onBack: () 
             {listings.map((listing) => (
               <div key={listing.id} className="flex items-start gap-3 p-3">
                 <div className="w-16 h-16 bg-[#EEF6EE] rounded-lg flex items-center justify-center text-2xl shrink-0 overflow-hidden">
-                  {listing.images?.[0] ? (
-                    <img src={getImageUrl(listing.images[0]) || listing.images[0]} alt="" className="w-full h-full object-cover" />
-                  ) : (listing.category?.icon || '🐔')}
+                  <MediaThumb path={listing.images?.[0]} fallbackIcon={listing.category?.icon || '🐔'} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">

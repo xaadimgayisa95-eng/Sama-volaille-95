@@ -19,7 +19,10 @@ export default function AdminListingsScreen({ onBack, showToast }: { onBack: () 
     setLoading(false);
   }
 
-  useEffect(() => { loadListings(); }, [filter]);
+  useEffect(() => {
+    loadListings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
 
   async function handleDelete(id: string) {
     if (!confirm('Supprimer cette annonce ?')) return;
@@ -27,9 +30,9 @@ export default function AdminListingsScreen({ onBack, showToast }: { onBack: () 
     if (!error) { setListings((prev) => prev.filter((l) => l.id !== id)); showToast('Annonce supprimée'); }
   }
 
-  async function handleStatusChange(id: string, status: string) {
+  async function handleStatusChange(id: string, status: 'available' | 'reserved' | 'sold') {
     const { error } = await supabase.from('listings').update({ status }).eq('id', id);
-    if (!error) { setListings((prev) => prev.map((l) => (l.id === id ? { ...l, status: status as any } : l))); showToast('Statut mis à jour'); }
+    if (!error) { setListings((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l))); showToast('Statut mis à jour'); }
   }
 
   async function handleToggleFeatured(id: string, current: boolean) {
@@ -82,7 +85,7 @@ export default function AdminListingsScreen({ onBack, showToast }: { onBack: () 
                   >
                     <Star className={`w-4 h-4 ${listing.featured ? 'fill-current' : ''}`} />
                   </button>
-                  <select value={listing.status} onChange={(e) => handleStatusChange(listing.id, e.target.value)} className="text-xs border rounded px-1.5 py-1">
+                  <select value={listing.status} onChange={(e) => handleStatusChange(listing.id, e.target.value as 'available' | 'reserved' | 'sold')} className="text-xs border rounded px-1.5 py-1">
                     <option value="available">Disponible</option>
                     <option value="reserved">Réservé</option>
                     <option value="sold">Vendu</option>

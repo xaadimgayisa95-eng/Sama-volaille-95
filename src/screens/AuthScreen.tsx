@@ -20,23 +20,56 @@ export default function AuthScreen({ onSuccess }: { onSuccess: () => void }) {
         options: { redirectTo: window.location.origin, queryParams: { prompt: 'select_account' } },
       });
       if (error) throw error;
-    } catch (err: any) { setError(err.message || 'Erreur Google'); setGoogleLoading(false); }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || 'Erreur Google');
+      setGoogleLoading(false);
+    }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault(); setLoading(true); setError('');
+    const formData = new FormData(e.currentTarget);
+    const targetEmail = (formData.get('email') as string || email || '').trim();
+    const targetPassword = (formData.get('password') as string || password || '');
+    const targetName = (formData.get('name') as string || name || '').trim();
+    const targetPhone = (formData.get('phone') as string || phone || '').trim();
+
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (!targetEmail) {
+          throw new Error('Veuillez saisir votre e-mail');
+        }
+        const { error } = await supabase.auth.signInWithPassword({
+          email: targetEmail,
+          password: targetPassword,
+        });
         if (error) throw error;
       } else {
-        const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
+        if (!targetEmail) {
+          throw new Error('Veuillez saisir votre e-mail');
+        }
+        const { data, error } = await supabase.auth.signUp({
+          email: targetEmail,
+          password: targetPassword,
+          options: { data: { name: targetName } }
+        });
         if (error) throw error;
-        if (data.user) await supabase.from('profiles').insert({ id: data.user.id, name, phone });
+        if (data.user) {
+          await supabase.from('profiles').insert({
+            id: data.user.id,
+            name: targetName,
+            phone: targetPhone
+          });
+        }
       }
       onSuccess();
-    } catch (err: any) { setError(err.message || 'Erreur'); }
-    finally { setLoading(false); }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || 'Erreur');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -74,12 +107,12 @@ export default function AuthScreen({ onSuccess }: { onSuccess: () => void }) {
         <form onSubmit={handleSubmit} className="space-y-3">
           {!isLogin && (
             <>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nom complet" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-[#1E5C20] outline-none" required />
-              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Téléphone (WhatsApp)" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-[#1E5C20] outline-none" />
+              <input type="text" name="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nom complet" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-[#1E5C20] outline-none" required />
+              <input type="tel" name="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Téléphone (WhatsApp)" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-[#1E5C20] outline-none" />
             </>
           )}
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-[#1E5C20] outline-none" required />
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mot de passe" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-[#1E5C20] outline-none" required />
+          <input type="email" name="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-[#1E5C20] outline-none" required />
+          <input type="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mot de passe" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-[#1E5C20] outline-none" required />
           <button type="submit" disabled={loading} className="w-full bg-[#1E5C20] text-white rounded-lg py-3 font-bold disabled:opacity-50 flex items-center justify-center gap-2">
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {loading ? 'Chargement...' : isLogin ? 'Se connecter' : 'Créer un compte'}

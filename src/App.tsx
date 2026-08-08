@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from './lib/supabase';
 import { Menu, XCircle, Flag, Users, FileText, LayoutDashboard, LogOut, Heart, PlusCircle, ArrowLeft } from 'lucide-react';
+import { App as CapApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import type { Category, Profile, Screen } from './types/database';
 import BottomNav from './components/BottomNav';
 import Toast from './components/Toast';
@@ -28,13 +30,18 @@ function App() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [screen, setScreen] = useState<Screen>('home');
-  const [prevScreen, setPrevScreen] = useState<Screen>('home');
+  const [history, setHistory] = useState<Screen[]>(['home']);
   const [pendingScreen, setPendingScreen] = useState<Screen | null>(null);
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [toast, setToast] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [adminStats, setAdminStats] = useState({ listings: 0, users: 0, reports: 0 });
+
+  const historyRef = useRef<Screen[]>(['home']);
+  useEffect(() => {
+    historyRef.current = history;
+  }, [history]);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -91,35 +98,60 @@ function App() {
     return () => { mounted = false; clearTimeout(timeout); subscription.unsubscribe(); };
   }, [loadProfile]);
 
+  const goBack = useCallback(() => {
+    setHistory((prev) => {
+      if (prev.length <= 1) {
+        return prev;
+      }
+      const nextHistory = [...prev];
+      nextHistory.pop();
+      const lastScreen = nextHistory[nextHistory.length - 1];
+      setScreen(lastScreen);
+      return nextHistory;
+    });
+  }, []);
+
   function goTo(s: Screen) {
     if (AUTH_REQUIRED_SCREENS.includes(s) && !user) {
       setPendingScreen(s);
-      setPrevScreen(screen);
+      setHistory((prev) => [...prev, 'auth']);
       setScreen('auth');
       setMenuOpen(false);
       return;
     }
-    setPrevScreen(screen);
+    setHistory((prev) => [...prev, s]);
     setScreen(s);
     setMenuOpen(false);
     if (s === 'admin') loadAdminStats();
   }
 
-  function goBack() {
-    setScreen(prevScreen);
-  }
-
   function openListing(id: string) {
     setSelectedListingId(id);
-    setPrevScreen(screen);
+    setHistory((prev) => [...prev, 'detail']);
     setScreen('detail');
   }
 
   function openCategory(cat: Category) {
     setSelectedCategory(cat);
-    setPrevScreen(screen);
+    setHistory((prev) => [...prev, 'search']);
     setScreen('search');
   }
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    const backButtonHandler = CapApp.addListener('backButton', () => {
+      if (historyRef.current.length > 1) {
+        goBack();
+      } else {
+        CapApp.exitApp();
+      }
+    });
+
+    return () => {
+      backButtonHandler.then((h) => h.remove());
+    };
+  }, [goBack]);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -138,7 +170,7 @@ function App() {
     return (
       <div className="relative h-[100dvh]">
         <button
-          onClick={() => { setPendingScreen(null); setScreen(prevScreen); }}
+          onClick={() => { setPendingScreen(null); goBack(); }}
           className="absolute top-4 left-4 z-10 w-9 h-9 rounded-full bg-black/20 flex items-center justify-center text-white"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -147,6 +179,15 @@ function App() {
           onSuccess={() => {
             const dest = pendingScreen || 'home';
             setPendingScreen(null);
+            setHistory((prev) => {
+              const nextHistory = [...prev];
+              if (nextHistory[nextHistory.length - 1] === 'auth') {
+                nextHistory[nextHistory.length - 1] = dest;
+              } else {
+                nextHistory.push(dest);
+              }
+              return nextHistory;
+            });
             setScreen(dest);
             if (dest === 'admin') loadAdminStats();
           }}

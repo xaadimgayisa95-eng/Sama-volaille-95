@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
 import { ArrowLeft, ExternalLink, ImagePlus, Loader2, LogOut, PackagePlus, Pencil, Plus, Save, Store, Trash2, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 

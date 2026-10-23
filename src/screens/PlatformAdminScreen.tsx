@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
 import { ArrowLeft, ExternalLink, Loader2, Plus, RefreshCw, Store, ShieldAlert } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -44,7 +45,7 @@ export default function PlatformAdminScreen({ user, onBack }: { user: { id: stri
 
   useEffect(() => { void load(); }, [load]);
 
-  async function createStore(event: React.FormEvent<HTMLFormElement>) {
+  async function createStore(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError(''); setNotice('');
     if (!ownerId) { setError('Choisissez le compte du commerçant.'); return; }
     setSaving(true);

@@ -19,6 +19,7 @@ import AdminSettingsScreen from './screens/AdminSettingsScreen';
 import AdminCategoriesScreen from './screens/AdminCategoriesScreen';
 import StorefrontScreen from './screens/StorefrontScreen';
 import StoreDashboard from './screens/StoreDashboard';
+import DaanDooleHome from './screens/DaanDooleHome';
 
 // Screens that require a logged-in user; everything else is open to guests.
 const AUTH_REQUIRED_SCREENS: Screen[] = ['publish', 'favorites', 'profile', 'admin', 'admin-listings', 'admin-reports', 'admin-users', 'admin-settings', 'admin-categories'];
@@ -134,6 +135,10 @@ function App() {
         <div className="w-10 h-10 border-2 border-white border-t-transparent rounded-full animate-spin" />
       </div>
     );
+  }
+
+  if (window.location.pathname === '/') {
+    return <DaanDooleHome />;
   }
 
   if (window.location.pathname.replace(/\/$/, '') === '/gestion-boutique') {

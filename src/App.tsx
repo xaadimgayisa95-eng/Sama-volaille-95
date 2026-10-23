@@ -18,6 +18,7 @@ import AdminUsersScreen from './screens/AdminUsersScreen';
 import AdminSettingsScreen from './screens/AdminSettingsScreen';
 import AdminCategoriesScreen from './screens/AdminCategoriesScreen';
 import StorefrontScreen from './screens/StorefrontScreen';
+import StoreDashboard from './screens/StoreDashboard';
 
 // Screens that require a logged-in user; everything else is open to guests.
 const AUTH_REQUIRED_SCREENS: Screen[] = ['publish', 'favorites', 'profile', 'admin', 'admin-listings', 'admin-reports', 'admin-users', 'admin-settings', 'admin-categories'];
@@ -133,6 +134,18 @@ function App() {
         <div className="w-10 h-10 border-2 border-white border-t-transparent rounded-full animate-spin" />
       </div>
     );
+  }
+
+  if (window.location.pathname.replace(/\/$/, '') === '/gestion-boutique') {
+    if (!user) {
+      return (
+        <div className="relative min-h-[100dvh]">
+          <a href="/" className="absolute left-4 top-4 z-10 rounded-full bg-black/10 px-3 py-2 text-sm font-bold text-white">Retour</a>
+          <AuthScreen onSuccess={() => { /* Auth state listener updates the current session. */ }} />
+        </div>
+      );
+    }
+    return <StoreDashboard user={user} onLogout={handleLogout} />;
   }
 
   if (screen === 'auth') {

@@ -17,6 +17,7 @@ import AdminReportsScreen from './screens/AdminReportsScreen';
 import AdminUsersScreen from './screens/AdminUsersScreen';
 import AdminSettingsScreen from './screens/AdminSettingsScreen';
 import AdminCategoriesScreen from './screens/AdminCategoriesScreen';
+import StorefrontScreen from './screens/StorefrontScreen';
 
 // Screens that require a logged-in user; everything else is open to guests.
 const AUTH_REQUIRED_SCREENS: Screen[] = ['publish', 'favorites', 'profile', 'admin', 'admin-listings', 'admin-reports', 'admin-users', 'admin-settings', 'admin-categories'];
@@ -119,6 +120,11 @@ function App() {
   async function handleLogout() {
     await supabase.auth.signOut();
     setMenuOpen(false);
+  }
+
+  const storefrontMatch = window.location.pathname.match(/^\/boutique\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/i);
+  if (storefrontMatch) {
+    return <StorefrontScreen slug={decodeURIComponent(storefrontMatch[1]).toLowerCase()} />;
   }
 
   if (checkingAuth) {

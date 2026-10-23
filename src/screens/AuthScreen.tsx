@@ -40,12 +40,12 @@ export default function AuthScreen({ onSuccess }: { onSuccess: () => void }) {
   }
 
   return (
-    <div className="h-[100dvh] bg-gradient-to-br from-[#133D15] via-[#1E5C20] to-[#2D7A30] flex items-center justify-center p-4 overflow-y-auto">
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-5 my-4">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-stone-50 via-white to-emerald-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="w-full max-w-sm bg-white rounded-2xl border border-stone-100 shadow-xl p-5 my-4">
         <div className="text-center mb-5">
-          <div className="w-14 h-14 bg-[#F5C518] rounded-xl flex items-center justify-center text-3xl mx-auto mb-3">🐓</div>
-          <h1 className="font-extrabold text-2xl">Sama<span className="text-[#F5C518]">Volaille</span></h1>
-          <p className="text-gray-500 text-xs mt-1">Marché avicole en ligne</p>
+          <div className="w-14 h-14 bg-emerald-800 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3 text-white">🛍️</div>
+          <h1 className="font-extrabold text-2xl tracking-tight text-stone-900">DAAN <span className="text-emerald-700">DOOLE</span></h1>
+          <p className="text-stone-500 text-xs mt-1">Vos produits, votre catalogue, votre boutique en ligne</p>
         </div>
 
         <button onClick={handleGoogleLogin} disabled={googleLoading} className="w-full flex items-center justify-center gap-3 border-2 border-gray-200 rounded-lg py-3 font-semibold text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 mb-4">
@@ -74,13 +74,13 @@ export default function AuthScreen({ onSuccess }: { onSuccess: () => void }) {
         <form onSubmit={handleSubmit} className="space-y-3">
           {!isLogin && (
             <>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nom complet" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-[#1E5C20] outline-none" required />
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nom complet" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-emerald-700 outline-none" required />
               <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Téléphone (WhatsApp)" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-[#1E5C20] outline-none" />
             </>
           )}
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-[#1E5C20] outline-none" required />
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mot de passe" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-[#1E5C20] outline-none" required />
-          <button type="submit" disabled={loading} className="w-full bg-[#1E5C20] text-white rounded-lg py-3 font-bold disabled:opacity-50 flex items-center justify-center gap-2">
+          <button type="submit" disabled={loading} className="w-full bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg py-3 font-bold disabled:opacity-50 flex items-center justify-center gap-2">
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {loading ? 'Chargement...' : isLogin ? 'Se connecter' : 'Créer un compte'}
           </button>

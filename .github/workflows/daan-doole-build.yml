@@ -3,7 +3,9 @@ name: Build DAAN DOOLE branch
 on:
   push:
     branches:
+      - main
       - feature/daan-doole-foundation
+  workflow_dispatch:
   pull_request:
     branches:
       - main

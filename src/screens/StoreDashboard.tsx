@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { ArrowLeft, ExternalLink, ImagePlus, Loader2, LogOut, PackagePlus, Pencil, Plus, Save, Store, Trash2, X } from 'lucide-react';
+import { ExternalLink, ImagePlus, Loader2, LogOut, PackagePlus, Pencil, Plus, Save, Store, Trash2, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 type StoreRecord = { id: string; name: string; slug: string; description: string; phone: string; whatsapp: string; city: string; status: 'draft'|'published'|'suspended'; plan: 'catalog'|'store' };
@@ -20,6 +20,7 @@ export default function StoreDashboard({ user, onLogout }: { user: { id:string; 
   const [editing,setEditing] = useState<ProductRecord|null>(null);
   const [form,setForm] = useState(emptyProduct);
   const [showForm,setShowForm] = useState(false);
+  const [imageFile,setImageFile] = useState<File|null>(null);
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
@@ -35,11 +36,12 @@ export default function StoreDashboard({ user, onLogout }: { user: { id:string; 
 
   useEffect(()=>{ void load(); },[load]);
 
-  function startNew() { setEditing(null); setForm(emptyProduct); setShowForm(true); setNotice(''); }
+  function startNew() { setEditing(null); setForm(emptyProduct); setImageFile(null); setShowForm(true); setNotice(''); setError(''); }
   function startEdit(product:ProductRecord) {
     setEditing(product);
+    setImageFile(null);
     setForm({name:product.name,slug:product.slug,description:product.description,price:String(product.price),category:product.category,image_url:product.image_urls?.[0]||'',stock_quantity:product.stock_quantity==null?'':String(product.stock_quantity),is_published:product.is_published});
-    setShowForm(true); setNotice('');
+    setShowForm(true); setNotice(''); setError('');
   }
 
   async function saveProduct(e:React.FormEvent) {
@@ -51,7 +53,25 @@ export default function StoreDashboard({ user, onLogout }: { user: { id:string; 
     const stock=form.stock_quantity.trim()===''?null:Number(form.stock_quantity);
     if (stock!==null && (!Number.isInteger(stock)||stock<0)) { setError('Le stock doit être un nombre entier positif.'); return; }
     setSaving(true); setError(''); setNotice('');
-    const payload={store_id:store.id,name,slug,description:form.description.trim(),price,category:form.category.trim(),image_urls:form.image_url.trim()?[form.image_url.trim()]:[],stock_quantity:stock,is_published:form.is_published,updated_at:new Date().toISOString()};
+    let imageUrl = form.image_url.trim();
+    if (imageFile) {
+      if (!imageFile.type.startsWith('image/')) {
+        setSaving(false); setError('Choisissez un fichier image (JPG, PNG ou WebP).'); return;
+      }
+      if (imageFile.size > 5 * 1024 * 1024) {
+        setSaving(false); setError('La photo doit faire 5 Mo maximum.'); return;
+      }
+      const extension = (imageFile.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+      const filePath = `${store.id}/${Date.now()}-${slug}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from('store-products').upload(filePath, imageFile, { upsert: true, contentType: imageFile.type });
+      if (uploadError) {
+        setSaving(false);
+        setError("Impossible d’envoyer la photo. Vérifiez que le stockage « store-products » a été configuré dans Supabase.");
+        return;
+      }
+      imageUrl = supabase.storage.from('store-products').getPublicUrl(filePath).data.publicUrl;
+    }
+    const payload={store_id:store.id,name,slug,description:form.description.trim(),price,category:form.category.trim(),image_urls:imageUrl?[imageUrl]:[],stock_quantity:stock,is_published:form.is_published,updated_at:new Date().toISOString()};
     const result=editing
       ? await supabase.from('store_products').update(payload).eq('id',editing.id).select('id').maybeSingle()
       : await supabase.from('store_products').insert(payload).select('id').maybeSingle();
@@ -86,7 +106,16 @@ export default function StoreDashboard({ user, onLogout }: { user: { id:string; 
       {showForm&&<form onSubmit={saveProduct} className="mt-5 space-y-3 rounded-3xl border bg-white p-4 shadow-sm"><div className="flex items-center justify-between"><h3 className="font-extrabold">{editing?'Modifier le produit':'Nouveau produit'}</h3><button type="button" onClick={()=>setShowForm(false)} className="rounded-full p-2"><X className="h-5 w-5"/></button></div>
         <label className="block text-sm font-semibold">Nom du produit<input required maxLength={160} value={form.name} onChange={e=>setForm({...form,name:e.target.value,slug:editing?form.slug:slugify(e.target.value)})} className="mt-1 w-full rounded-xl border px-3 py-3 font-normal outline-none focus:border-emerald-700" placeholder="Ex. Robe bazin"/></label>
         <label className="block text-sm font-semibold">Prix (FCFA)<input required type="number" min="0" step="1" value={form.price} onChange={e=>setForm({...form,price:e.target.value})} className="mt-1 w-full rounded-xl border px-3 py-3 font-normal outline-none focus:border-emerald-700" placeholder="15000"/></label>
-        <label className="block text-sm font-semibold">Lien de la photo<input type="url" value={form.image_url} onChange={e=>setForm({...form,image_url:e.target.value})} className="mt-1 w-full rounded-xl border px-3 py-3 font-normal outline-none focus:border-emerald-700" placeholder="https://..."/><span className="mt-1 block text-xs font-normal text-stone-500">Pour cette première version, utilisez un lien d’image public. Le téléversement direct sera ajouté après configuration du stockage sécurisé.</span></label>
+        <div className="rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/50 p-3">
+          <label className="block text-sm font-semibold">Photo du produit
+            <span className="mt-2 flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-white px-3 py-4 text-sm font-bold text-emerald-900 ring-1 ring-emerald-100"><ImagePlus className="h-5 w-5"/>{imageFile ? imageFile.name : 'Choisir une photo sur le téléphone'}<input type="file" accept="image/*" capture="environment" onChange={e=>setImageFile(e.target.files?.[0]||null)} className="sr-only"/></span>
+          </label>
+          {(imageFile || form.image_url) && <div className="mt-3 flex items-center gap-3"><img src={imageFile ? URL.createObjectURL(imageFile) : form.image_url} alt="Aperçu du produit" className="h-20 w-20 rounded-xl object-cover ring-1 ring-stone-200"/><div className="min-w-0 text-xs text-stone-600">{imageFile ? 'Nouvelle photo prête à envoyer' : 'Photo actuelle'}<button type="button" onClick={()=>{setImageFile(null);setForm({...form,image_url:''});}} className="mt-2 block font-bold text-red-600">Retirer la photo</button></div></div>}
+          <p className="mt-2 text-xs font-normal leading-5 text-stone-500">JPG, PNG ou WebP · 5 Mo maximum. La photo sera envoyée dans le stockage de la boutique.</p>
+          <label className="mt-3 block text-xs font-semibold text-stone-600">Ou coller un lien d’image public
+            <input type="url" value={form.image_url} onChange={e=>setForm({...form,image_url:e.target.value})} className="mt-1 w-full rounded-xl border bg-white px-3 py-2.5 font-normal outline-none focus:border-emerald-700" placeholder="https://..."/>
+          </label>
+        </div>
         <label className="block text-sm font-semibold">Catégorie<input maxLength={100} value={form.category} onChange={e=>setForm({...form,category:e.target.value})} className="mt-1 w-full rounded-xl border px-3 py-3 font-normal outline-none focus:border-emerald-700" placeholder="Vêtements, chaussures…"/></label>
         <label className="block text-sm font-semibold">Description<textarea maxLength={3000} rows={3} value={form.description} onChange={e=>setForm({...form,description:e.target.value})} className="mt-1 w-full rounded-xl border px-3 py-3 font-normal outline-none focus:border-emerald-700" placeholder="Détails du produit"/></label>
         <label className="block text-sm font-semibold">Quantité en stock (facultatif)<input type="number" min="0" step="1" value={form.stock_quantity} onChange={e=>setForm({...form,stock_quantity:e.target.value})} className="mt-1 w-full rounded-xl border px-3 py-3 font-normal outline-none focus:border-emerald-700" placeholder="Ex. 10"/></label>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from './lib/supabase';
 import { Menu, XCircle, Flag, Users, FileText, LayoutDashboard, LogOut, Heart, PlusCircle, ArrowLeft } from 'lucide-react';
-import type { Category, Listing, Profile, Screen } from './types/database';
+import type { Category, Profile, Screen } from './types/database';
 import BottomNav from './components/BottomNav';
 import Toast from './components/Toast';
 import HomeScreen from './screens/HomeScreen';

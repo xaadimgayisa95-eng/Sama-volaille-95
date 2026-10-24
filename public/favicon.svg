@@ -1,4 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" rx="20" fill="#1E5C20"/>
-  <text y=".9em" font-size="70" x="15">🐓</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="DAAN DOOLE">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0B9B70"/><stop offset="1" stop-color="#07563F"/></linearGradient></defs>
+  <rect width="100" height="100" rx="24" fill="url(#g)"/>
+  <circle cx="50" cy="50" r="37" fill="none" stroke="#D9F99D" stroke-width="2.5"/>
+  <text x="50" y="59" text-anchor="middle" font-family="Arial,sans-serif" font-size="29" font-weight="800" fill="#FFFFFF">DD</text>
+  <circle cx="76" cy="24" r="6" fill="#FACC15"/>
 </svg>

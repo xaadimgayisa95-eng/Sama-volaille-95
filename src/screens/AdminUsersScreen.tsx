@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Search, Users, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Profile } from '../types/database';
 

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from './lib/supabase';
 import { Menu, XCircle, Flag, Users, FileText, LayoutDashboard, LogOut, Heart, PlusCircle, ArrowLeft } from 'lucide-react';
-import type { Category, Listing, Profile, Screen } from './types/database';
+import type { Category, Profile, Screen } from './types/database';
 import BottomNav from './components/BottomNav';
 import Toast from './components/Toast';
 import HomeScreen from './screens/HomeScreen';
@@ -17,6 +17,10 @@ import AdminReportsScreen from './screens/AdminReportsScreen';
 import AdminUsersScreen from './screens/AdminUsersScreen';
 import AdminSettingsScreen from './screens/AdminSettingsScreen';
 import AdminCategoriesScreen from './screens/AdminCategoriesScreen';
+import StorefrontScreen from './screens/StorefrontScreen';
+import StoreDashboard from './screens/StoreDashboard';
+import DaanDooleHome from './screens/DaanDooleHome';
+import PlatformAdminScreen from './screens/PlatformAdminScreen';
 
 // Screens that require a logged-in user; everything else is open to guests.
 const AUTH_REQUIRED_SCREENS: Screen[] = ['publish', 'favorites', 'profile', 'admin', 'admin-listings', 'admin-reports', 'admin-users', 'admin-settings', 'admin-categories'];
@@ -121,12 +125,45 @@ function App() {
     setMenuOpen(false);
   }
 
+  const storefrontMatch = window.location.pathname.match(/^\/boutique\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/i);
+  if (storefrontMatch) {
+    return <StorefrontScreen slug={decodeURIComponent(storefrontMatch[1]).toLowerCase()} />;
+  }
+
   if (checkingAuth) {
     return (
       <div className="h-[100dvh] flex items-center justify-center bg-[#1E5C20]">
         <div className="w-10 h-10 border-2 border-white border-t-transparent rounded-full animate-spin" />
       </div>
     );
+  }
+
+  if (window.location.pathname === '/') {
+    return <DaanDooleHome />;
+  }
+
+  if (window.location.pathname.replace(/\/$/, '') === '/gestion-boutique') {
+    if (!user) {
+      return (
+        <div className="relative min-h-[100dvh]">
+          <a href="/" className="absolute left-4 top-4 z-10 rounded-full bg-black/10 px-3 py-2 text-sm font-bold text-white">Retour</a>
+          <AuthScreen onSuccess={() => { /* Auth state listener updates the current session. */ }} />
+        </div>
+      );
+    }
+    return <StoreDashboard user={user} onLogout={handleLogout} />;
+  }
+
+  if (window.location.pathname.replace(/\/$/, '') === '/admin-boutiques') {
+    if (!user) {
+      return (
+        <div className="relative min-h-[100dvh]">
+          <a href="/" className="absolute left-4 top-4 z-10 rounded-full bg-black/10 px-3 py-2 text-sm font-bold text-white">Retour</a>
+          <AuthScreen onSuccess={() => { /* Auth state listener updates the current session. */ }} />
+        </div>
+      );
+    }
+    return <PlatformAdminScreen user={user} onBack={() => { window.location.href = '/'; }} />;
   }
 
   if (screen === 'auth') {

@@ -1,4 +1,4 @@
-import { ArrowLeft, Edit, Shield, ChevronRight, FileText, Heart, HelpCircle, LogOut, Loader2 } from 'lucide-react';
+import { Edit, Shield, ChevronRight, FileText, Heart, HelpCircle, LogOut, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Profile } from '../types/database';

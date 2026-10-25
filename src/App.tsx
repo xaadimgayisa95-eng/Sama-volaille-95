@@ -1,345 +1,124 @@
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from './lib/supabase';
-import { Menu, XCircle, Flag, Users, FileText, LayoutDashboard, LogOut, Heart, PlusCircle, ArrowLeft } from 'lucide-react';
-import type { Category, Profile, Screen } from './types/database';
-import BottomNav from './components/BottomNav';
-import Toast from './components/Toast';
-import HomeScreen from './screens/HomeScreen';
-import SearchScreen from './screens/SearchScreen';
-import DetailScreen from './screens/DetailScreen';
-import PublishScreen from './screens/PublishScreen';
-import FavoritesScreen from './screens/FavoritesScreen';
-import ProfileScreen from './screens/ProfileScreen';
-import AuthScreen from './screens/AuthScreen';
-import AdminDashboard from './screens/AdminDashboard';
-import AdminListingsScreen from './screens/AdminListingsScreen';
-import AdminReportsScreen from './screens/AdminReportsScreen';
-import AdminUsersScreen from './screens/AdminUsersScreen';
-import AdminSettingsScreen from './screens/AdminSettingsScreen';
-import AdminCategoriesScreen from './screens/AdminCategoriesScreen';
-import StorefrontScreen from './screens/StorefrontScreen';
-import StoreDashboard from './screens/StoreDashboard';
-import DaanDooleHome from './screens/DaanDooleHome';
-import PlatformAdminScreen from './screens/PlatformAdminScreen';
+import { useState } from 'react';
 
-// Screens that require a logged-in user; everything else is open to guests.
-const AUTH_REQUIRED_SCREENS: Screen[] = ['publish', 'favorites', 'profile', 'admin', 'admin-listings', 'admin-reports', 'admin-users', 'admin-settings', 'admin-categories'];
+type Kind = 'store' | 'catalog';
 
-function App() {
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [checkingAuth, setCheckingAuth] = useState(true);
-  const [screen, setScreen] = useState<Screen>('home');
-  const [prevScreen, setPrevScreen] = useState<Screen>('home');
-  const [pendingScreen, setPendingScreen] = useState<Screen | null>(null);
-  const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [toast, setToast] = useState('');
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [adminStats, setAdminStats] = useState({ listings: 0, users: 0, reports: 0 });
+const plans = [
+  { name: 'كتالوج', price: '3 000', items: ['كتالوج رقمي', 'حتى 50 منتجًا', 'رابط خاص ومشاركة سهلة'] },
+  { name: 'متجر', price: '7 500', items: ['متجر إلكتروني كامل', 'حتى 300 منتج', 'سلة وطلبات عبر واتساب'], featured: true },
+  { name: 'متجر احترافي', price: '15 000', items: ['مزايا المتجر المتقدمة', 'منتجات غير محدودة', 'هوية مخصصة'] },
+];
 
-  const showToast = useCallback((msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(''), 3000);
-  }, []);
+const templates = [
+  { name: 'أحذية وحقائب', icon: '👟', kind: 'store' as Kind, bg: '#e5e9ff' },
+  { name: 'ملابس وأزياء', icon: '👗', kind: 'store' as Kind, bg: '#f8e6ef' },
+  { name: 'قطع غيار السيارات', icon: '🔧', kind: 'catalog' as Kind, bg: '#fff0c4' },
+  { name: 'مطاعم ووجبات', icon: '🍲', kind: 'catalog' as Kind, bg: '#dff3e8' },
+  { name: 'العناية والتجميل', icon: '💄', kind: 'store' as Kind, bg: '#f4e3ff' },
+];
 
-  const loadProfile = useCallback(async (userId: string) => {
-    const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
-    setProfile(data as Profile | null);
-    return data as Profile | null;
-  }, []);
+export default function App() {
+  const [lang, setLang] = useState<'ar' | 'fr'>('ar');
+  const [choice, setChoice] = useState<Kind>('store');
+  const [showCreate, setShowCreate] = useState(false);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [notice, setNotice] = useState('');
+  const isArabic = lang === 'ar';
 
-  const loadAdminStats = useCallback(async () => {
-    const [{ count: listings }, { count: users }, { count: reports }] = await Promise.all([
-      supabase.from('listings').select('*', { count: 'exact', head: true }),
-      supabase.from('profiles').select('*', { count: 'exact', head: true }),
-      supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-    ]);
-    setAdminStats({ listings: listings || 0, users: users || 0, reports: reports || 0 });
-  }, []);
+  const startCreate = (kind: Kind = 'store') => {
+    setChoice(kind);
+    setShowCreate(true);
+    setNotice('');
+  };
 
-  useEffect(() => {
-    let mounted = true;
-    const timeout = setTimeout(() => {
-      if (mounted) setCheckingAuth(false);
-    }, 3000);
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (!mounted) return;
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        try { await loadProfile(session.user.id); } catch {}
-      } else { setProfile(null); }
-      setCheckingAuth(false);
-      clearTimeout(timeout);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return;
-      if (!session) {
-        setCheckingAuth(false);
-        clearTimeout(timeout);
-      }
-    }).catch(() => {
-      if (mounted) {
-        setCheckingAuth(false);
-        clearTimeout(timeout);
-      }
-    });
-
-    return () => { mounted = false; clearTimeout(timeout); subscription.unsubscribe(); };
-  }, [loadProfile]);
-
-  function goTo(s: Screen) {
-    if (AUTH_REQUIRED_SCREENS.includes(s) && !user) {
-      setPendingScreen(s);
-      setPrevScreen(screen);
-      setScreen('auth');
-      setMenuOpen(false);
-      return;
-    }
-    setPrevScreen(screen);
-    setScreen(s);
-    setMenuOpen(false);
-    if (s === 'admin') loadAdminStats();
-  }
-
-  function goBack() {
-    setScreen(prevScreen);
-  }
-
-  function openListing(id: string) {
-    setSelectedListingId(id);
-    setPrevScreen(screen);
-    setScreen('detail');
-  }
-
-  function openCategory(cat: Category) {
-    setSelectedCategory(cat);
-    setPrevScreen(screen);
-    setScreen('search');
-  }
-
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    setMenuOpen(false);
-  }
-
-  const storefrontMatch = window.location.pathname.match(/^\/boutique\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/i);
-  if (storefrontMatch) {
-    return <StorefrontScreen slug={decodeURIComponent(storefrontMatch[1]).toLowerCase()} />;
-  }
-
-  if (checkingAuth) {
-    return (
-      <div className="h-[100dvh] flex items-center justify-center bg-[#1E5C20]">
-        <div className="w-10 h-10 border-2 border-white border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (window.location.pathname === '/') {
-    return <DaanDooleHome />;
-  }
-
-  if (window.location.pathname.replace(/\/$/, '') === '/gestion-boutique') {
-    if (!user) {
-      return (
-        <div className="relative min-h-[100dvh]">
-          <a href="/" className="absolute left-4 top-4 z-10 rounded-full bg-black/10 px-3 py-2 text-sm font-bold text-white">Retour</a>
-          <AuthScreen onSuccess={() => { /* Auth state listener updates the current session. */ }} />
-        </div>
-      );
-    }
-    return <StoreDashboard user={user} onLogout={handleLogout} />;
-  }
-
-  if (window.location.pathname.replace(/\/$/, '') === '/admin-boutiques') {
-    if (!user) {
-      return (
-        <div className="relative min-h-[100dvh]">
-          <a href="/" className="absolute left-4 top-4 z-10 rounded-full bg-black/10 px-3 py-2 text-sm font-bold text-white">Retour</a>
-          <AuthScreen onSuccess={() => { /* Auth state listener updates the current session. */ }} />
-        </div>
-      );
-    }
-    return <PlatformAdminScreen user={user} onBack={() => { window.location.href = '/'; }} />;
-  }
-
-  if (screen === 'auth') {
-    return (
-      <div className="relative h-[100dvh]">
-        <button
-          onClick={() => { setPendingScreen(null); setScreen(prevScreen); }}
-          className="absolute top-4 left-4 z-10 w-9 h-9 rounded-full bg-black/20 flex items-center justify-center text-white"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <AuthScreen
-          onSuccess={() => {
-            const dest = pendingScreen || 'home';
-            setPendingScreen(null);
-            setScreen(dest);
-            if (dest === 'admin') loadAdminStats();
-          }}
-        />
-      </div>
-    );
-  }
-
-  function renderScreen() {
-    switch (screen) {
-      case 'home':
-        return (
-          <HomeScreen
-            onSearch={() => goTo('search')}
-            onCategory={openCategory}
-            onListing={openListing}
-            user={user}
-          />
-        );
-      case 'search':
-        return (
-          <SearchScreen
-            onBack={goBack}
-            onListing={openListing}
-            initialCategory={selectedCategory}
-          />
-        );
-      case 'detail':
-        return selectedListingId ? (
-          <DetailScreen
-            id={selectedListingId}
-            user={user}
-            onBack={goBack}
-            showToast={showToast}
-          />
-        ) : null;
-      case 'publish':
-        return (
-          <PublishScreen
-            user={user}
-            userProfile={profile}
-            onBack={goBack}
-            onSuccess={() => goTo('home')}
-          />
-        );
-      case 'favorites':
-        return (
-          <FavoritesScreen
-            user={user}
-            onBack={goBack}
-            onListing={openListing}
-          />
-        );
-      case 'profile':
-        return (
-          <ProfileScreen
-            user={user}
-            profile={profile}
-            onLogout={handleLogout}
-            isAdmin={profile?.role === 'admin'}
-            onAdmin={() => goTo('admin')}
-            onFavorites={() => goTo('favorites')}
-            showToast={showToast}
-            onProfileUpdate={() => loadProfile(user.id)}
-          />
-        );
-      case 'admin':
-        return <AdminDashboard onNavigate={goTo} stats={adminStats} />;
-      case 'admin-listings':
-        return <AdminListingsScreen onBack={() => goTo('admin')} showToast={showToast} />;
-      case 'admin-reports':
-        return <AdminReportsScreen onBack={() => goTo('admin')} showToast={showToast} />;
-      case 'admin-users':
-        return <AdminUsersScreen onBack={() => goTo('admin')} showToast={showToast} />;
-      case 'admin-settings':
-        return <AdminSettingsScreen onBack={() => goTo('admin')} showToast={showToast} />;
-      case 'admin-categories':
-        return <AdminCategoriesScreen onBack={() => goTo('admin')} showToast={showToast} />;
-      default:
-        return (
-          <HomeScreen
-            onSearch={() => goTo('search')}
-            onCategory={openCategory}
-            onListing={openListing}
-            user={user}
-          />
-        );
-    }
-  }
-
-  const isAdminScreen = screen.startsWith('admin');
-  const showNav = !isAdminScreen && screen !== 'detail' && screen !== 'publish';
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setNotice(isArabic
+      ? 'واجهة التسجيل قيد التجهيز. لن يتم إنشاء متجر قبل ربط التسجيل بقاعدة البيانات.'
+      : 'Le formulaire de création sera activé après la connexion sécurisée à la base de données.');
+  };
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-[#FAFAF8] max-w-[430px] mx-auto relative overflow-hidden">
+    <main dir={isArabic ? 'rtl' : 'ltr'} className="min-h-screen pb-24" style={{ background: 'var(--bg, #f5f6fb)', color: 'var(--ink, #10142b)', fontFamily: 'Tajawal, sans-serif' }}>
+      <style>{`
+        :root { --bg:#f5f6fb; --card:#fff; --ink:#10142b; --mute:#626a8a; --pri:#1b2a6b; --acc:#f5b800; --line:#e2e5f1; --ok:#0f8a5f; }
+        * { box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+        .js-wrap { max-width:900px; margin:0 auto; padding:0 16px; }
+        .js-card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px; }
+        .js-btn { min-height:48px; display:inline-flex; align-items:center; justify-content:center; padding:12px 20px; border-radius:14px; background:var(--acc); color:#2a2000; font-weight:800; border:0; cursor:pointer; }
+        .js-btn-primary { background:var(--pri); color:white; }
+        .js-muted { color:var(--mute); }
+        .js-grid { display:grid; gap:12px; }
+        .js-scroll { display:flex; gap:12px; overflow-x:auto; padding:4px 0 12px; }
+        .js-template { flex:0 0 180px; border:1px solid var(--line); border-radius:18px; overflow:hidden; background:var(--card); }
+        .js-template-visual { height:120px; display:grid; place-items:center; font-size:52px; }
+        .js-section { padding:32px 0; }
+        .js-plan { position:relative; }
+        .js-plan-featured { border:2px solid var(--pri); }
+        .js-field { width:100%; border:1px solid var(--line); background:var(--bg); border-radius:12px; padding:12px; font:inherit; margin-top:5px; }
+        @media(min-width:620px) { .js-two { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        @media(min-width:760px) { .js-hero-inner { grid-template-columns:1.2fr 1fr; } .js-plans { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+        @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+      `}</style>
 
-      {menuOpen && (
-        <div className="absolute inset-0 z-40 flex">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setMenuOpen(false)} />
-          <div className="relative w-72 bg-white h-full flex flex-col shadow-2xl">
-            <div className="bg-gradient-to-br from-[#133D15] to-[#1E5C20] p-5 pt-10">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-white font-extrabold text-lg">Menu</h2>
-                <button onClick={() => setMenuOpen(false)} className="text-white/70"><XCircle className="w-6 h-6" /></button>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg">
-                  {profile?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
-                </div>
-                <div>
-                  <p className="text-white font-bold text-sm">{profile?.name || 'Utilisateur'}</p>
-                  <p className="text-white/60 text-xs">{profile?.phone || user?.email}</p>
-                </div>
-              </div>
-            </div>
-            <div className="flex-1 py-2">
-              {[
-                { icon: PlusCircle, label: 'Publier une annonce', s: 'publish' as Screen },
-                { icon: Heart, label: 'Mes favoris', s: 'favorites' as Screen },
-                ...(profile?.role === 'admin' ? [
-                  { icon: LayoutDashboard, label: 'Dashboard Admin', s: 'admin' as Screen },
-                  { icon: FileText, label: 'Gérer annonces', s: 'admin-listings' as Screen },
-                  { icon: Flag, label: 'Signalements', s: 'admin-reports' as Screen },
-                  { icon: Users, label: 'Utilisateurs', s: 'admin-users' as Screen },
-                ] : []),
-              ].map(({ icon: Icon, label, s }) => (
-                <button key={s} onClick={() => goTo(s)} className="w-full flex items-center gap-3 px-5 py-3 hover:bg-gray-50 text-left">
-                  <Icon className="w-5 h-5 text-[#1E5C20]" />
-                  <span className="text-sm font-semibold">{label}</span>
-                </button>
-              ))}
-            </div>
-            <div className="border-t border-gray-100 p-4">
-              <button onClick={handleLogout} className="w-full flex items-center gap-3 px-1 py-2 text-red-600">
-                <LogOut className="w-5 h-5" />
-                <span className="text-sm font-semibold">Se déconnecter</span>
-              </button>
+      <header style={{ position:'sticky', top:0, zIndex:5, background:'var(--bg)', borderBottom:'1px solid var(--line)' }}>
+        <div className="js-wrap flex items-center gap-3 h-14">
+          <div className="grid place-items-center rounded-xl font-extrabold text-xl" style={{ width:38,height:38,background:'var(--pri)',color:'white' }}>J</div>
+          <strong className="flex-1 text-lg">Jokk Shop</strong>
+          <button onClick={() => setLang(isArabic ? 'fr' : 'ar')} className="rounded-full border px-3 py-2 text-sm font-bold" style={{ borderColor:'var(--line)',background:'var(--card)' }}>{isArabic ? 'Français' : 'العربية'}</button>
+        </div>
+      </header>
+
+      <section style={{ background:'#1b2a6b', color:'#fff', backgroundImage:'repeating-radial-gradient(circle at 0 0,transparent 0 18px,rgba(245,184,0,.22) 18px 21px)' }}>
+        <div className="js-wrap js-grid js-hero-inner items-center" style={{ paddingTop:36,paddingBottom:40,gap:28 }}>
+          <div>
+            <h1 className="text-3xl font-extrabold leading-tight mb-3">{isArabic ? 'أنشئ متجرك أو كتالوجك الرقمي في دقائق' : 'Créez votre boutique ou catalogue en quelques minutes'}</h1>
+            <p className="text-lg mb-5" style={{ opacity:.92 }}>{isArabic ? 'رابط خاص بك، ولوحة تحكم سهلة، وطلبات تصلك على واتساب. بدون برمجة.' : 'Votre lien, un tableau de bord simple et des commandes sur WhatsApp. Sans programmation.'}</p>
+            <div className="flex flex-wrap gap-3">
+              <button className="js-btn" onClick={() => startCreate('store')}>{isArabic ? 'أنشئ متجرك' : 'Créer ma boutique'}</button>
+              <a className="js-btn" href="#templates" style={{ background:'transparent',border:'1.5px solid rgba(255,255,255,.65)',color:'#fff' }}>{isArabic ? 'شاهد النماذج' : 'Voir les modèles'}</a>
             </div>
           </div>
+          <div aria-hidden="true" className="justify-self-center" style={{ width:210,border:'6px solid #0c1022',borderRadius:30,background:'var(--bg)',color:'var(--ink)',overflow:'hidden',boxShadow:'0 18px 40px rgba(0,0,0,.35)',transform:'rotate(-3deg)' }}>
+            <div className="flex items-center gap-2 px-3 font-bold text-xs" style={{ height:34,background:'var(--card)' }}><span className="rounded-md" style={{ width:18,height:18,background:'var(--pri)' }} /> Élégance</div>
+            <div className="m-2 rounded-xl" style={{ height:70,background:'#1b2a6b',backgroundImage:'repeating-radial-gradient(circle at 100% 0,transparent 0 8px,rgba(245,184,0,.3) 8px 10px)' }} />
+            <div className="grid grid-cols-2 gap-2 px-2 pb-3">{templates.slice(0,4).map((t) => <div key={t.name} className="grid place-items-center rounded-xl text-3xl" style={{ aspectRatio:'1',background:t.bg }}>{t.icon}</div>)}</div>
+          </div>
         </div>
-      )}
+      </section>
 
-      <div className={`flex flex-col flex-1 min-h-0 overflow-hidden ${showNav ? 'pb-16' : ''}`}>
-        {renderScreen()}
+      <div className="js-wrap">
+        <section className="js-section">
+          <h2 className="text-2xl font-extrabold mb-1">{isArabic ? 'ماذا تريد أن تنشئ؟' : 'Que souhaitez-vous créer ?'}</h2>
+          <p className="js-muted mb-4">{isArabic ? 'اختر ما يناسب نشاطك.' : 'Choisissez la solution adaptée à votre activité.'}</p>
+          <div className="js-grid js-two">
+            {[{kind:'store' as Kind,title:isArabic?'متجر إلكتروني':'Boutique en ligne',desc:isArabic?'للبيع المباشر عبر الإنترنت.':'Pour vendre directement en ligne.',features:isArabic?['سلة وطلبات عبر واتساب','لوحة تحكم للمنتجات والطلبات','رابط خاص بك']:['Panier et commandes WhatsApp','Gestion des produits et commandes','Lien personnalisé']},{kind:'catalog' as Kind,title:isArabic?'كتالوج رقمي':'Catalogue numérique',desc:isArabic?'لعرض منتجاتك وأسعارك فقط.':'Pour présenter vos produits et prix.',features:isArabic?['عرض أنيق للمنتجات','مشاركة الرابط بسهولة','تحديث الأسعار في أي وقت']:['Présentation élégante','Partage facile du lien','Prix modifiables à tout moment']}].map((p) => <article key={p.kind} className="js-card"><h3 className="text-xl font-extrabold mb-1">{p.title}</h3><p className="js-muted mb-3">{p.desc}</p><ul className="grid gap-2 mb-4">{p.features.map(x=><li key={x} className="flex gap-2"><span style={{color:'var(--ok)'}}>✓</span>{x}</li>)}</ul><button className="js-btn js-btn-primary w-full" onClick={()=>startCreate(p.kind)}>{isArabic?'ابدأ الآن':'Commencer'}</button></article>)}
+          </div>
+        </section>
+
+        <section id="templates" className="js-section">
+          <h2 className="text-2xl font-extrabold mb-1">{isArabic ? 'نماذج جاهزة' : 'Modèles prêts à utiliser'}</h2>
+          <p className="js-muted mb-4">{isArabic ? 'ابدأ من نموذج قريب من نشاطك.' : 'Choisissez un modèle proche de votre activité.'}</p>
+          <div className="js-scroll">{templates.map(t=><article key={t.name} className="js-template"><div className="js-template-visual" style={{background:t.bg}}>{t.icon}</div><div className="p-3"><strong className="block mb-3">{t.name}</strong><button className="js-btn js-btn-primary w-full text-sm" style={{minHeight:40,padding:8}} onClick={()=>startCreate(t.kind)}>{isArabic?'اختر النموذج':'Choisir'}</button></div></article>)}</div>
+        </section>
+
+        <section className="js-section">
+          <h2 className="text-2xl font-extrabold mb-1">{isArabic ? 'كيف تبدأ؟' : 'Comment commencer ?'}</h2><p className="js-muted mb-4">{isArabic ? 'ثلاث خطوات فقط.' : 'Seulement trois étapes.'}</p>
+          <div className="js-grid">{(isArabic?['سجّل واختر النموذج','أضف منتجاتك وصورك وأسعارك','شارك رابطك مع عملائك']:['Inscrivez-vous et choisissez un modèle','Ajoutez vos produits, photos et prix','Partagez votre lien avec vos clients']).map((s,i)=><div className="js-card flex items-center gap-4" key={s}><span className="grid place-items-center rounded-full font-extrabold" style={{width:38,height:38,flexShrink:0,background:'var(--acc)'}}>{i+1}</span><strong>{s}</strong></div>)}</div>
+        </section>
+
+        <section className="js-section">
+          <h2 className="text-2xl font-extrabold mb-1">{isArabic ? 'أسعار بسيطة' : 'Des tarifs simples'}</h2><p className="js-muted mb-5">{isArabic ? 'اشتراك شهري، بلا عمولة على مبيعاتك.' : 'Un abonnement mensuel, sans commission sur vos ventes.'}</p>
+          <div className="js-grid js-plans">{plans.map(p=><article key={p.name} className={`js-card js-plan ${p.featured?'js-plan-featured':''}`}><h3 className="text-xl font-extrabold">{p.name}</h3><p className="text-3xl font-extrabold my-2">{p.price}<small className="text-sm font-medium js-muted"> {isArabic?'FCFA / شهر':'FCFA / mois'}</small></p><ul className="grid gap-2">{p.items.map(i=><li key={i}>✓ {i}</li>)}</ul><button className="js-btn js-btn-primary w-full mt-4" onClick={()=>startCreate(p.name==='كتالوج'?'catalog':'store')}>{isArabic?'اختر الخطة':'Choisir ce forfait'}</button></article>)}</div>
+          <p className="js-muted text-sm text-center mt-4">{isArabic?'الأسعار المعروضة مبدئية وتحتاج إلى اعتماد قبل تفعيل الاشتراكات.':'Les tarifs affichés sont provisoires et doivent être validés avant activation.'}</p>
+        </section>
       </div>
 
-      {showNav && (
-        <div className="absolute bottom-0 left-0 right-0">
-          <BottomNav screen={screen} onNavigate={goTo} onMenuOpen={() => setMenuOpen(true)} />
-        </div>
-      )}
+      <footer className="text-center border-t py-6 px-4 text-sm js-muted" style={{borderColor:'var(--line)'}}>Jokk Shop · {isArabic?'منصة للمتاجر والكتالوجات الرقمية في السنغال':'Plateforme de boutiques et catalogues numériques au Sénégal'}</footer>
+      <div className="fixed bottom-0 inset-x-0 z-10 border-t p-3" style={{background:'var(--card)',borderColor:'var(--line)',paddingBottom:'calc(12px + env(safe-area-inset-bottom, 0px))'}}><button className="js-btn w-full mx-auto" style={{maxWidth:520,display:'flex'}} onClick={()=>startCreate('store')}>{isArabic?'أنشئ متجرك الآن':'Créer ma boutique'}</button></div>
 
-      {isAdminScreen && (
-        <button onClick={() => setMenuOpen(true)} className="absolute top-3 right-4 z-30 w-9 h-9 flex items-center justify-center rounded-full bg-white/20">
-          <Menu className="w-5 h-5 text-white" />
-        </button>
-      )}
-
-      <Toast message={toast} />
-    </div>
+      {showCreate && <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{background:'rgba(8,10,25,.58)'}} onClick={()=>setShowCreate(false)}><div role="dialog" aria-modal="true" className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 max-h-[92vh] overflow-auto" style={{background:'var(--card)',color:'var(--ink)'}} onClick={e=>e.stopPropagation()}><div className="flex items-center mb-4"><h2 className="text-xl font-extrabold flex-1">{isArabic?'إنشاء متجرك':'Créer votre espace'}</h2><button className="text-2xl px-2" onClick={()=>setShowCreate(false)} aria-label={isArabic?'إغلاق':'Fermer'}>×</button></div><p className="js-muted mb-4">{isArabic?'هذه بداية نموذج التسجيل؛ سيتم ربطه بالمصادقة وقاعدة البيانات في المرحلة التالية.':'Le formulaire sera connecté à l’authentification et à la base de données à l’étape suivante.'}</p><div className="grid grid-cols-2 gap-2 mb-3"><button className="js-card text-center" style={{borderColor:choice==='store'?'var(--pri)':'var(--line)'}} onClick={()=>setChoice('store')}>{isArabic?'متجر إلكتروني':'Boutique'}</button><button className="js-card text-center" style={{borderColor:choice==='catalog'?'var(--pri)':'var(--line)'}} onClick={()=>setChoice('catalog')}>{isArabic?'كتالوج رقمي':'Catalogue'}</button></div><form onSubmit={submit}><label className="block font-bold mt-3">{isArabic?'اسم النشاط':'Nom de l’activité'}<input required className="js-field" value={name} onChange={e=>setName(e.target.value)} placeholder={isArabic?'مثال: أناقة':'Ex. Élégance'} /></label><label className="block font-bold mt-3">{isArabic?'رقم واتساب':'Numéro WhatsApp'}<input required className="js-field" value={phone} onChange={e=>setPhone(e.target.value)} inputMode="tel" placeholder="+221 ..." /></label><button className="js-btn js-btn-primary w-full mt-5" type="submit">{isArabic?'متابعة':'Continuer'}</button></form>{notice && <p role="status" className="mt-4 rounded-xl p-3 text-sm" style={{background:'#fff0c4',color:'#4d3a00'}}>{notice}</p>}</div></div>}
+    </main>
   );
 }
-
-export default App;

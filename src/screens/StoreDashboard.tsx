@@ -91,6 +91,18 @@ export default function StoreDashboard({ user, onLogout }: { user: { id:string; 
     setNotice('Produit supprimé.'); await load();
   }
 
+  async function updateStoreStatus(status:'draft'|'published') {
+    if (!store) return;
+    if (status==='published' && products.filter(p=>p.is_published).length===0) {
+      setError('Publiez au moins un produit avant de publier la boutique.'); return;
+    }
+    setError(''); setNotice('');
+    const {error:updateError}=await supabase.from('stores').update({status,updated_at:new Date().toISOString()}).eq('id',store.id);
+    if (updateError) { setError('Impossible de modifier le statut de la boutique.'); return; }
+    setNotice(status==='published'?'Boutique publiée. Le lien public est maintenant actif.':'Boutique remise en brouillon.');
+    await load();
+  }
+
   async function updateOrderStatus(order:OrderRecord, status:OrderRecord['status']) {
     const {error:updateError}=await supabase.from('orders').update({status}).eq('id',order.id);
     if (updateError) { setError('Impossible de mettre à jour cette commande.'); return; }
@@ -110,7 +122,7 @@ export default function StoreDashboard({ user, onLogout }: { user: { id:string; 
   return <main className="min-h-screen bg-stone-50 text-stone-900">
     <header className="sticky top-0 z-20 border-b bg-white/95 backdrop-blur"><div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3"><a href="/" className="text-sm font-black tracking-wide text-emerald-800">DAAN DOOLE</a><button onClick={onLogout} className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-stone-600"><LogOut className="h-4 w-4"/> Déconnexion</button></div></header>
     <div className="mx-auto max-w-3xl px-4 py-5">
-      <div className="rounded-3xl bg-gradient-to-br from-emerald-900 to-emerald-700 p-5 text-white"><p className="text-xs font-bold uppercase tracking-widest text-emerald-100">Espace commerçant</p><h1 className="mt-2 text-2xl font-black">{store.name}</h1><p className="mt-1 text-sm text-white/80">{store.city||'Sénégal'} · {store.plan==='catalog'?'Catalogue numérique':'Boutique en ligne'}</p><div className="mt-4 flex flex-wrap items-center gap-2"><span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">{store.status==='published'?'Publiée':store.status==='suspended'?'Suspendue':'Brouillon'}</span>{store.status==='published'&&<a href={`/boutique/${store.slug}`} className="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-extrabold text-emerald-900"><ExternalLink className="h-4 w-4"/> Voir ma boutique</a>}</div></div>
+      <div className="rounded-3xl bg-gradient-to-br from-emerald-900 to-emerald-700 p-5 text-white"><p className="text-xs font-bold uppercase tracking-widest text-emerald-100">Espace commerçant</p><h1 className="mt-2 text-2xl font-black">{store.name}</h1><p className="mt-1 text-sm text-white/80">{store.city||'Sénégal'} · {store.plan==='catalog'?'Catalogue numérique':'Boutique en ligne'}</p><div className="mt-4 flex flex-wrap items-center gap-2"><span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">{store.status==='published'?'Publiée':store.status==='suspended'?'Suspendue':'Brouillon'}</span>{store.status!=='suspended'&&<button onClick={()=>void updateStoreStatus(store.status==='published'?'draft':'published')} className="rounded-xl bg-white px-3 py-2 text-xs font-extrabold text-emerald-900">{store.status==='published'?'Remettre en brouillon':'Publier la boutique'}</button>}{store.status==='published'&&<a href={`/boutique/${store.slug}`} className="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-extrabold text-emerald-900"><ExternalLink className="h-4 w-4"/> Voir ma boutique</a>}</div></div>
       <div className="mt-5 flex items-center justify-between gap-3"><div><h2 className="text-xl font-black">Mes produits</h2><p className="mt-1 text-sm text-stone-500">{products.length} produit(s) · {products.filter(p=>p.is_published).length} publié(s)</p></div><button onClick={startNew} className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-800 px-4 py-3 text-sm font-bold text-white"><Plus className="h-4 w-4"/> Ajouter</button></div>
       {notice&&<p className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">{notice}</p>}{error&&<p className="mt-4 break-words rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       {showForm&&<form onSubmit={saveProduct} className="mt-5 space-y-3 rounded-3xl border bg-white p-4 shadow-sm"><div className="flex items-center justify-between"><h3 className="font-extrabold">{editing?'Modifier le produit':'Nouveau produit'}</h3><button type="button" onClick={()=>setShowForm(false)} className="rounded-full p-2"><X className="h-5 w-5"/></button></div>

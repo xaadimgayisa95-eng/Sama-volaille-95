@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
 import StoreDashboard from './screens/StoreDashboard';
+import Storefront from './screens/Storefront';
 
 type Kind = 'store' | 'catalog';
 
@@ -163,7 +164,7 @@ export default function App() {
     }
   };
 
-  if (dashboardUser) {
+  const storefrontMatch = window.location.pathname.match(/^\\/boutique\\/([^/]+)\\/?$/);\n  if (storefrontMatch) return <Storefront slug={decodeURIComponent(storefrontMatch[1])} />;\n\n  if (dashboardUser) {
     return <StoreDashboard
       user={dashboardUser}
       onLogout={async () => {

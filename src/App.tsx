@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { supabase } from './lib/supabase';
 
 type Kind = 'store' | 'catalog';
 
@@ -23,6 +24,10 @@ export default function App() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [notice, setNotice] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [verifiedPhone, setVerifiedPhone] = useState('');
   const isArabic = lang === 'ar';
 
   const startCreate = (kind: Kind = 'store') => {
@@ -31,11 +36,75 @@ export default function App() {
     setNotice('');
   };
 
-  const submit = (e: React.FormEvent) => {
+  const normalizePhone = (value: string) => {
+    const trimmed = value.trim();
+    if (trimmed.startsWith('+')) return '+' + trimmed.slice(1).replace(/\\D/g, '');
+    const digits = trimmed.replace(/\\D/g, '');
+    // Senegalese local mobile numbers are commonly entered as 9 digits.
+    if (digits.length === 9) return '+221' + digits;
+    if (digits.startsWith('221') && digits.length === 12) return '+' + digits;
+    return '+' + digits;
+  };
+
+  const makeSlug = (value: string) => {
+    const base = value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
+      .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 70) || 'boutique';
+    return base + '-' + Math.random().toString(36).slice(2, 6);
+  };
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setNotice(isArabic
-      ? 'واجهة التسجيل قيد التجهيز. لن يتم إنشاء متجر قبل ربط التسجيل بقاعدة البيانات.'
-      : 'Le formulaire de création sera activé après la connexion sécurisée à la base de données.');
+    setNotice('');
+    setSubmitting(true);
+    try {
+      if (!otpSent) {
+        const normalized = normalizePhone(phone);
+        if (normalized.replace(/\\D/g, '').length < 9) {
+          throw new Error(isArabic ? 'أدخل رقم هاتف صحيحًا مع رمز البلد.' : 'Saisissez un numéro valide avec son indicatif pays.');
+        }
+        const { error } = await supabase.auth.signInWithOtp({
+          phone: normalized,
+          options: { shouldCreateUser: true, data: { name: name.trim() } },
+        });
+        if (error) throw error;
+        setVerifiedPhone(normalized);
+        setOtpSent(true);
+        setNotice(isArabic
+          ? 'أرسلنا رمز التحقق عبر رسالة SMS. أدخل الرمز لإكمال إنشاء متجرك.'
+          : 'Un code de vérification a été envoyé par SMS. Saisissez-le pour continuer.');
+      } else {
+        if (!/^\\d{6}$/.test(otp.trim())) {
+          throw new Error(isArabic ? 'أدخل رمز التحقق المكوّن من 6 أرقام.' : 'Saisissez le code à 6 chiffres.');
+        }
+        const { data: authData, error: verifyError } = await supabase.auth.verifyOtp({
+          phone: verifiedPhone, token: otp.trim(), type: 'sms',
+        });
+        if (verifyError) throw verifyError;
+        if (!authData.user) throw new Error(isArabic ? 'تعذر تأكيد الحساب. حاول مجددًا.' : 'Impossible de confirmer le compte. Réessayez.');
+
+        const slug = makeSlug(name.trim());
+        const { data: storeData, error: storeError } = await supabase.from('stores').insert({
+          owner_user_id: authData.user.id,
+          name: name.trim(),
+          slug,
+          phone: verifiedPhone,
+          whatsapp: verifiedPhone,
+          plan: choice === 'store' ? 'store' : 'catalog',
+          status: 'draft',
+        }).select('id,slug,name').single();
+        if (storeError) throw storeError;
+        setNotice(isArabic
+          ? `تم إنشاء مساحة نشاطك بنجاح! اسم الرابط: ${storeData.slug}. المتجر محفوظ كمسودة ويمكنك إكمال إعداداته لاحقًا.`
+          : `Votre espace a été créé. Identifiant du lien : ${storeData.slug}. Il est enregistré en brouillon pour que vous puissiez terminer sa configuration.`);
+        setOtpSent(false);
+        setOtp('');
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setNotice((isArabic ? 'تعذر إكمال التسجيل: ' : 'Échec de l’inscription : ') + message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -118,7 +187,7 @@ export default function App() {
       <footer className="text-center border-t py-6 px-4 text-sm js-muted" style={{borderColor:'var(--line)'}}>Jokk Shop · {isArabic?'منصة للمتاجر والكتالوجات الرقمية في السنغال':'Plateforme de boutiques et catalogues numériques au Sénégal'}</footer>
       <div className="fixed bottom-0 inset-x-0 z-10 border-t p-3" style={{background:'var(--card)',borderColor:'var(--line)',paddingBottom:'calc(12px + env(safe-area-inset-bottom, 0px))'}}><button className="js-btn w-full mx-auto" style={{maxWidth:520,display:'flex'}} onClick={()=>startCreate('store')}>{isArabic?'أنشئ متجرك الآن':'Créer ma boutique'}</button></div>
 
-      {showCreate && <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{background:'rgba(8,10,25,.58)'}} onClick={()=>setShowCreate(false)}><div role="dialog" aria-modal="true" className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 max-h-[92vh] overflow-auto" style={{background:'var(--card)',color:'var(--ink)'}} onClick={e=>e.stopPropagation()}><div className="flex items-center mb-4"><h2 className="text-xl font-extrabold flex-1">{isArabic?'إنشاء متجرك':'Créer votre espace'}</h2><button className="text-2xl px-2" onClick={()=>setShowCreate(false)} aria-label={isArabic?'إغلاق':'Fermer'}>×</button></div><p className="js-muted mb-4">{isArabic?'هذه بداية نموذج التسجيل؛ سيتم ربطه بالمصادقة وقاعدة البيانات في المرحلة التالية.':'Le formulaire sera connecté à l’authentification et à la base de données à l’étape suivante.'}</p><div className="grid grid-cols-2 gap-2 mb-3"><button className="js-card text-center" style={{borderColor:choice==='store'?'var(--pri)':'var(--line)'}} onClick={()=>setChoice('store')}>{isArabic?'متجر إلكتروني':'Boutique'}</button><button className="js-card text-center" style={{borderColor:choice==='catalog'?'var(--pri)':'var(--line)'}} onClick={()=>setChoice('catalog')}>{isArabic?'كتالوج رقمي':'Catalogue'}</button></div><form onSubmit={submit}><label className="block font-bold mt-3">{isArabic?'اسم النشاط':'Nom de l’activité'}<input required className="js-field" value={name} onChange={e=>setName(e.target.value)} placeholder={isArabic?'مثال: أناقة':'Ex. Élégance'} /></label><label className="block font-bold mt-3">{isArabic?'رقم واتساب':'Numéro WhatsApp'}<input required className="js-field" value={phone} onChange={e=>setPhone(e.target.value)} inputMode="tel" placeholder="+221 ..." /></label><button className="js-btn js-btn-primary w-full mt-5" type="submit">{isArabic?'متابعة':'Continuer'}</button></form>{notice && <p role="status" className="mt-4 rounded-xl p-3 text-sm" style={{background:'#fff0c4',color:'#4d3a00'}}>{notice}</p>}</div></div>}
+      {showCreate && <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{background:'rgba(8,10,25,.58)'}} onClick={()=>setShowCreate(false)}><div role="dialog" aria-modal="true" className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 max-h-[92vh] overflow-auto" style={{background:'var(--card)',color:'var(--ink)'}} onClick={e=>e.stopPropagation()}><div className="flex items-center mb-4"><h2 className="text-xl font-extrabold flex-1">{isArabic?'إنشاء متجرك':'Créer votre espace'}</h2><button className="text-2xl px-2" onClick={()=>setShowCreate(false)} aria-label={isArabic?'إغلاق':'Fermer'}>×</button></div><p className="js-muted mb-4">{isArabic?'أدخل بيانات نشاطك، ثم أكد رقم هاتفك برمز SMS لإنشاء مساحة آمنة مرتبطة بقاعدة البيانات.':'Saisissez les informations de votre activité, puis confirmez votre téléphone par SMS pour créer votre espace sécurisé.'}</p><div className="grid grid-cols-2 gap-2 mb-3"><button className="js-card text-center" style={{borderColor:choice==='store'?'var(--pri)':'var(--line)'}} onClick={()=>setChoice('store')}>{isArabic?'متجر إلكتروني':'Boutique'}</button><button className="js-card text-center" style={{borderColor:choice==='catalog'?'var(--pri)':'var(--line)'}} onClick={()=>setChoice('catalog')}>{isArabic?'كتالوج رقمي':'Catalogue'}</button></div><form onSubmit={submit}><label className="block font-bold mt-3">{isArabic?'اسم النشاط':'Nom de l’activité'}<input required minLength={2} maxLength={120} className="js-field" value={name} onChange={e=>setName(e.target.value)} placeholder={isArabic?'مثال: أناقة':'Ex. Élégance'} disabled={otpSent} /></label><label className="block font-bold mt-3">{isArabic?'رقم واتساب':'Numéro WhatsApp'}<input required className="js-field" value={phone} onChange={e=>setPhone(e.target.value)} inputMode="tel" placeholder="+221 70 000 00 00" disabled={otpSent} /></label>{otpSent && <label className="block font-bold mt-3">{isArabic?'رمز التحقق SMS':'Code de vérification SMS'}<input required inputMode="numeric" autoComplete="one-time-code" maxLength={6} className="js-field" value={otp} onChange={e=>setOtp(e.target.value.replace(/\\D/g,''))} placeholder="123456" /></label>}<button className="js-btn js-btn-primary w-full mt-5" type="submit" disabled={submitting}>{submitting ? (isArabic?'جارٍ المعالجة…':'Traitement…') : otpSent ? (isArabic?'تأكيد وإنشاء النشاط':'Vérifier et créer') : (isArabic?'إرسال رمز التحقق':'Envoyer le code SMS')}</button>{otpSent && <button className="w-full mt-3 p-2 underline" type="button" onClick={()=>{setOtpSent(false);setOtp('');setNotice('');}}>{isArabic?'تغيير رقم الهاتف':'Modifier le numéro'}</button>}</form>{notice && <p role="status" className="mt-4 rounded-xl p-3 text-sm break-words" style={{background:'#fff0c4',color:'#4d3a00'}}>{notice}</p>}</div></div>}
     </main>
   );
 }

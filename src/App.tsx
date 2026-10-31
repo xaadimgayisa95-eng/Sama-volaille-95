@@ -164,7 +164,10 @@ export default function App() {
     }
   };
 
-  const storefrontMatch = window.location.pathname.match(/^\\/boutique\\/([^/]+)\\/?$/);\n  if (storefrontMatch) return <Storefront slug={decodeURIComponent(storefrontMatch[1])} />;\n\n  if (dashboardUser) {
+  const storefrontMatch = window.location.pathname.match(/^\/boutique\/([^/]+)\/?$/);
+  if (storefrontMatch) return <Storefront slug={decodeURIComponent(storefrontMatch[1])} />;
+
+  if (dashboardUser) {
     return <StoreDashboard
       user={dashboardUser}
       onLogout={async () => {

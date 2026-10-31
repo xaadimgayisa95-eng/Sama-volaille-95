@@ -21,6 +21,7 @@ export default function StoreDashboard({ user, onLogout }: { user: { id:string; 
   const [editing,setEditing] = useState<ProductRecord|null>(null);
   const [form,setForm] = useState(emptyProduct);
   const [showForm,setShowForm] = useState(false);
+  const [settingsOpen,setSettingsOpen] = useState(false);
   const [imageFile,setImageFile] = useState<File|null>(null);
 
   const load = useCallback(async () => {
@@ -91,6 +92,20 @@ export default function StoreDashboard({ user, onLogout }: { user: { id:string; 
     setNotice('Produit supprimé.'); await load();
   }
 
+  async function saveStoreSettings() {
+    if (!store) return;
+    setSaving(true); setError(''); setNotice('');
+    const {error:saveError}=await supabase.from('stores').update({
+      description:store.description||'',
+      city:store.city||'',
+      whatsapp:store.whatsapp||'',
+      updated_at:new Date().toISOString()
+    }).eq('id',store.id);
+    setSaving(false);
+    if (saveError) { setError('Impossible d’enregistrer les paramètres du magasin.'); return; }
+    setNotice('Paramètres du magasin enregistrés.'); setSettingsOpen(false); await load();
+  }
+
   async function updateStoreStatus(status:'draft'|'published') {
     if (!store) return;
     if (status==='published' && products.filter(p=>p.is_published).length===0) {
@@ -123,6 +138,15 @@ export default function StoreDashboard({ user, onLogout }: { user: { id:string; 
     <header className="sticky top-0 z-20 border-b bg-white/95 backdrop-blur"><div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3"><a href="/" className="text-sm font-black tracking-wide text-emerald-800">DAAN DOOLE</a><button onClick={onLogout} className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-stone-600"><LogOut className="h-4 w-4"/> Déconnexion</button></div></header>
     <div className="mx-auto max-w-3xl px-4 py-5">
       <div className="rounded-3xl bg-gradient-to-br from-emerald-900 to-emerald-700 p-5 text-white"><p className="text-xs font-bold uppercase tracking-widest text-emerald-100">Espace commerçant</p><h1 className="mt-2 text-2xl font-black">{store.name}</h1><p className="mt-1 text-sm text-white/80">{store.city||'Sénégal'} · {store.plan==='catalog'?'Catalogue numérique':'Boutique en ligne'}</p><div className="mt-4 flex flex-wrap items-center gap-2"><span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">{store.status==='published'?'Publiée':store.status==='suspended'?'Suspendue':'Brouillon'}</span>{store.status!=='suspended'&&<button onClick={()=>void updateStoreStatus(store.status==='published'?'draft':'published')} className="rounded-xl bg-white px-3 py-2 text-xs font-extrabold text-emerald-900">{store.status==='published'?'Remettre en brouillon':'Publier la boutique'}</button>}{store.status==='published'&&<a href={`/boutique/${store.slug}`} className="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-extrabold text-emerald-900"><ExternalLink className="h-4 w-4"/> Voir ma boutique</a>}</div></div>
+      <section className="mt-4 rounded-2xl border border-stone-100 bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between gap-3"><div><h2 className="font-black">Paramètres de la boutique</h2><p className="mt-1 text-xs text-stone-500">Description, ville et contact WhatsApp</p></div><button onClick={()=>setSettingsOpen(!settingsOpen)} className="rounded-xl border px-3 py-2 text-xs font-bold">{settingsOpen?'Fermer':'Modifier'}</button></div>
+        {settingsOpen&&<div className="mt-4 space-y-3">
+          <label className="block text-sm font-semibold">Description<textarea rows={3} maxLength={1000} value={store.description||''} onChange={e=>setStore({...store,description:e.target.value})} className="mt-1 w-full rounded-xl border px-3 py-3 font-normal" placeholder="Présentez votre activité"/></label>
+          <label className="block text-sm font-semibold">Ville<input maxLength={100} value={store.city||''} onChange={e=>setStore({...store,city:e.target.value})} className="mt-1 w-full rounded-xl border px-3 py-3 font-normal" placeholder="Dakar, Thiès…"/></label>
+          <label className="block text-sm font-semibold">WhatsApp<input value={store.whatsapp||''} onChange={e=>setStore({...store,whatsapp:e.target.value})} inputMode="tel" maxLength={30} className="mt-1 w-full rounded-xl border px-3 py-3 font-normal" placeholder="+221 77 000 00 00"/></label>
+          <button disabled={saving} onClick={()=>void saveStoreSettings()} className="w-full rounded-xl bg-emerald-800 px-4 py-3 font-bold text-white disabled:opacity-60">{saving?'Enregistrement…':'Enregistrer les paramètres'}</button>
+        </div>}
+      </section>
       <div className="mt-5 flex items-center justify-between gap-3"><div><h2 className="text-xl font-black">Mes produits</h2><p className="mt-1 text-sm text-stone-500">{products.length} produit(s) · {products.filter(p=>p.is_published).length} publié(s)</p></div><button onClick={startNew} className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-800 px-4 py-3 text-sm font-bold text-white"><Plus className="h-4 w-4"/> Ajouter</button></div>
       {notice&&<p className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">{notice}</p>}{error&&<p className="mt-4 break-words rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       {showForm&&<form onSubmit={saveProduct} className="mt-5 space-y-3 rounded-3xl border bg-white p-4 shadow-sm"><div className="flex items-center justify-between"><h3 className="font-extrabold">{editing?'Modifier le produit':'Nouveau produit'}</h3><button type="button" onClick={()=>setShowForm(false)} className="rounded-full p-2"><X className="h-5 w-5"/></button></div>

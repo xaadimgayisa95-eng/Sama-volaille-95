@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase } from './lib/supabase';
+import StoreDashboard from './screens/StoreDashboard';
 
 type Kind = 'store' | 'catalog';
 
@@ -28,7 +29,24 @@ export default function App() {
   const [otpSent, setOtpSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [verifiedPhone, setVerifiedPhone] = useState('');
+  const [dashboardUser, setDashboardUser] = useState<{ id: string; email?: string } | null>(null);
   const isArabic = lang === 'ar';
+
+  // In test mode, return to the existing store dashboard when a test session already exists.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('test') !== '1') return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error || cancelled || !data.session?.user) return;
+      const { data: existingStore, error: storeError } = await supabase
+        .from('stores').select('id').eq('owner_user_id', data.session.user.id).maybeSingle();
+      if (!cancelled && !storeError && existingStore) {
+        setDashboardUser({ id: data.session.user.id, email: data.session.user.email ?? undefined });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const startCreate = (kind: Kind = 'store') => {
     setChoice(kind);
@@ -90,7 +108,7 @@ export default function App() {
         setOtpSent(false);
         setOtp('');
         setShowCreate(false);
-        // Keep a visible success message on the page after closing the dialog.
+        setDashboardUser({ id: user.id, email: user.email ?? undefined });
         return;
       }
       if (!otpSent) {
@@ -135,6 +153,7 @@ export default function App() {
         setOtpSent(false);
         setOtp('');
         setShowCreate(false);
+        setDashboardUser({ id: authData.user.id, email: authData.user.email ?? undefined });
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -143,6 +162,18 @@ export default function App() {
       setSubmitting(false);
     }
   };
+
+  if (dashboardUser) {
+    return <StoreDashboard
+      user={dashboardUser}
+      onLogout={async () => {
+        await supabase.auth.signOut();
+        setDashboardUser(null);
+        setNotice('');
+        setShowCreate(false);
+      }}
+    />;
+  }
 
   return (
     <main dir={isArabic ? 'rtl' : 'ltr'} className="min-h-screen pb-24" style={{ background: 'var(--bg, #f5f6fb)', color: 'var(--ink, #10142b)', fontFamily: 'Tajawal, sans-serif' }}>

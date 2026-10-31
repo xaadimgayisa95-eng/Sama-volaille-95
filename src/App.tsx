@@ -89,6 +89,8 @@ export default function App() {
           : `Espace de test créé : ${storeData.slug}. Le mode test ne vérifie pas la propriété du téléphone.`);
         setOtpSent(false);
         setOtp('');
+        setShowCreate(false);
+        // Keep a visible success message on the page after closing the dialog.
         return;
       }
       if (!otpSent) {
@@ -132,6 +134,7 @@ export default function App() {
           : `Votre espace a été créé. Identifiant du lien : ${storeData.slug}. Il est enregistré en brouillon pour que vous puissiez terminer sa configuration.`);
         setOtpSent(false);
         setOtp('');
+        setShowCreate(false);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

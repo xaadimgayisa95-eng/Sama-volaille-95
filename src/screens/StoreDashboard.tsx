@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 
 type StoreRecord = { id: string; name: string; slug: string; description: string; phone: string; whatsapp: string; city: string; status: 'draft'|'published'|'suspended'; plan: 'catalog'|'store' };
 type ProductRecord = { id: string; name: string; slug: string; description: string; price: number; category: string; image_urls: string[]; stock_quantity: number|null; is_published: boolean };
+type OrderRecord = { id:string; number:number; customer_name:string; customer_phone:string; customer_address:string; note:string; total:number; status:'new'|'preparing'|'delivered'|'cancelled'; created_at:string };
 
 const emptyProduct = { name:'', slug:'', description:'', price:'', category:'', image_url:'', stock_quantity:'', is_published:false };
 const slugify = (value:string) => value.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -12,6 +13,7 @@ const priceLabel = (value:number) => new Intl.NumberFormat('fr-FR',{maximumFract
 export default function StoreDashboard({ user, onLogout }: { user: { id:string; email?:string }; onLogout:()=>void }) {
   const [store,setStore] = useState<StoreRecord|null>(null);
   const [products,setProducts] = useState<ProductRecord[]>([]);
+  const [orders,setOrders] = useState<OrderRecord[]>([]);
   const [loading,setLoading] = useState(true);
   const [saving,setSaving] = useState(false);
   const [notice,setNotice] = useState('');
@@ -25,8 +27,11 @@ export default function StoreDashboard({ user, onLogout }: { user: { id:string; 
     setLoading(true); setError('');
     const {data:storeData,error:storeError} = await supabase.from('stores').select('id,name,slug,description,phone,whatsapp,city,status,plan').eq('owner_user_id',user.id).maybeSingle();
     if (storeError) { setError('Impossible de charger la boutique. Vérifiez que la migration DAAN DOOLE a été appliquée.'); setLoading(false); return; }
-    if (!storeData) { setStore(null); setProducts([]); setLoading(false); return; }
+    if (!storeData) { setStore(null); setProducts([]); setOrders([]); setLoading(false); return; }
     setStore(storeData as StoreRecord);
+    const {data:orderData,error:orderError} = await supabase.from('orders').select('id,number,customer_name,customer_phone,customer_address,note,total,status,created_at').eq('store_id',storeData.id).order('created_at',{ascending:false});
+    if (orderError) setError('La boutique est chargée, mais les commandes n’ont pas pu être récupérées.');
+    setOrders((orderData||[]) as OrderRecord[]);
     const {data:productData,error:productError} = await supabase.from('store_products').select('id,name,slug,description,price,category,image_urls,stock_quantity,is_published').eq('store_id',storeData.id).order('created_at',{ascending:false});
     if (productError) setError('La boutique est chargée, mais les produits n’ont pas pu être récupérés.');
     setProducts((productData||[]) as ProductRecord[]);
@@ -86,6 +91,12 @@ export default function StoreDashboard({ user, onLogout }: { user: { id:string; 
     setNotice('Produit supprimé.'); await load();
   }
 
+  async function updateOrderStatus(order:OrderRecord, status:OrderRecord['status']) {
+    const {error:updateError}=await supabase.from('orders').update({status}).eq('id',order.id);
+    if (updateError) { setError('Impossible de mettre à jour cette commande.'); return; }
+    setNotice(`Commande #${order.number} mise à jour.`); await load();
+  }
+
   async function togglePublished(product:ProductRecord) {
     const {error:updateError}=await supabase.from('store_products').update({is_published:!product.is_published,updated_at:new Date().toISOString()}).eq('id',product.id);
     if (updateError) { setError('Impossible de modifier la visibilité du produit.'); return; }
@@ -122,6 +133,10 @@ export default function StoreDashboard({ user, onLogout }: { user: { id:string; 
         <button disabled={saving} className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-800 px-4 py-3 font-bold text-white disabled:opacity-60">{saving?<Loader2 className="h-5 w-5 animate-spin"/>:<Save className="h-5 w-5"/>}{saving?'Enregistrement…':'Enregistrer le produit'}</button>
       </form>}
       <section className="mt-4 space-y-3">{products.length===0?<div className="rounded-3xl border border-dashed bg-white px-5 py-12 text-center"><PackagePlus className="mx-auto mb-3 h-9 w-9 text-stone-300"/><h3 className="font-bold">Aucun produit pour le moment</h3><p className="mt-1 text-sm text-stone-500">Ajoutez votre premier produit pour commencer votre catalogue.</p></div>:products.map(product=><article key={product.id} className="flex gap-3 rounded-2xl border border-stone-100 bg-white p-3 shadow-sm"><div className="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-stone-100">{product.image_urls?.[0]?<img src={product.image_urls[0]} alt={product.name} className="h-full w-full object-cover"/>:<div className="flex h-full items-center justify-center"><ImagePlus className="h-7 w-7 text-stone-300"/></div>}</div><div className="min-w-0 flex-1"><h3 className="line-clamp-2 font-bold">{product.name}</h3><p className="mt-1 text-sm font-black text-emerald-800">{priceLabel(product.price)}</p><p className="mt-1 text-xs text-stone-500">{product.category||'Sans catégorie'} · {product.is_published?'Publié':'Masqué'}</p><div className="mt-2 flex flex-wrap gap-2"><button onClick={()=>startEdit(product)} className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-bold"><Pencil className="h-3.5 w-3.5"/> Modifier</button><button onClick={()=>void togglePublished(product)} className="rounded-lg border px-2.5 py-1.5 text-xs font-bold">{product.is_published?'Masquer':'Publier'}</button><button onClick={()=>void removeProduct(product)} className="inline-flex items-center gap-1 rounded-lg border border-red-100 px-2.5 py-1.5 text-xs font-bold text-red-600"><Trash2 className="h-3.5 w-3.5"/> Supprimer</button></div></div></article>)}</section>
+      <section className="mt-8">
+        <div className="mb-3 flex items-center justify-between gap-3"><div><h2 className="text-xl font-black">Mes commandes</h2><p className="mt-1 text-sm text-stone-500">{orders.length} commande(s)</p></div><span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">{orders.filter(o=>o.status==='new').length} nouvelle(s)</span></div>
+        {orders.length===0?<div className="rounded-3xl border border-dashed bg-white px-5 py-8 text-center"><h3 className="font-bold">Aucune commande pour le moment</h3><p className="mt-1 text-sm text-stone-500">Les commandes reçues pour cette boutique apparaîtront ici.</p></div>:<div className="space-y-3">{orders.map(order=><article key={order.id} className="rounded-2xl border border-stone-100 bg-white p-4 shadow-sm"><div className="flex items-start justify-between gap-3"><div><h3 className="font-bold">Commande #{order.number}</h3><p className="mt-1 text-sm text-stone-600">{order.customer_name} · {order.customer_phone}</p><p className="mt-1 text-xs text-stone-500">{new Date(order.created_at).toLocaleString('fr-FR')}</p></div><strong className="shrink-0 text-emerald-800">{priceLabel(Number(order.total))}</strong></div>{order.customer_address&&<p className="mt-2 text-sm text-stone-600">Adresse : {order.customer_address}</p>}{order.note&&<p className="mt-1 text-sm text-stone-600">Note : {order.note}</p>}<label className="mt-3 block text-xs font-bold text-stone-600">État de la commande<select value={order.status} onChange={e=>void updateOrderStatus(order,e.target.value as OrderRecord['status'])} className="mt-1 w-full rounded-xl border bg-white px-3 py-2.5 text-sm"><option value="new">Nouvelle</option><option value="preparing">En préparation</option><option value="delivered">Livrée</option><option value="cancelled">Annulée</option></select></label></article>)}</div>}
+      </section>
       <p className="pb-8 pt-6 text-center text-xs text-stone-400">DAAN DOOLE · Gestion simple depuis votre téléphone</p>
     </div>
   </main>;

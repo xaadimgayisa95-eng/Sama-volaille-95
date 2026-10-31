@@ -57,6 +57,40 @@ export default function App() {
     setNotice('');
     setSubmitting(true);
     try {
+      // Temporary test flow: open the app with ?test=1.
+      // This skips SMS only for development/testing; it does not verify phone ownership.
+      const testMode = new URLSearchParams(window.location.search).get('test') === '1';
+      if (testMode) {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        let user = sessionData.session?.user ?? null;
+        if (!user) {
+          const { data, error } = await supabase.auth.signInAnonymously({
+            options: { data: { name: name.trim(), test_mode: true } },
+          });
+          if (error) throw new Error('تعذر بدء جلسة الاختبار. فعّل Anonymous Sign-Ins في Supabase Authentication > Sign In / Providers ثم حاول مجددًا. التفاصيل: ' + error.message);
+          user = data.user;
+        }
+        if (!user) throw new Error('تعذر إنشاء مستخدم للاختبار.');
+        const normalized = normalizePhone(phone);
+        const slug = makeSlug(name.trim());
+        const { data: storeData, error: storeError } = await supabase.from('stores').insert({
+          owner_user_id: user.id,
+          name: name.trim(),
+          slug,
+          phone: normalized,
+          whatsapp: normalized,
+          plan: choice === 'store' ? 'store' : 'catalog',
+          status: 'draft',
+        }).select('id,slug,name').single();
+        if (storeError) throw new Error('بدأت جلسة الاختبار، لكن حفظ المتجر فشل. تحقق من سياسة INSERT لجدول stores. التفاصيل: ' + storeError.message);
+        setNotice(isArabic
+          ? `تم إنشاء متجر تجريبي بنجاح: ${storeData.slug}. هذا وضع اختبار فقط ولا يثبت ملكية رقم الهاتف.`
+          : `Espace de test créé : ${storeData.slug}. Le mode test ne vérifie pas la propriété du téléphone.`);
+        setOtpSent(false);
+        setOtp('');
+        return;
+      }
       if (!otpSent) {
         const normalized = normalizePhone(phone);
         if (normalized.replace(/\\D/g, '').length < 9) {
